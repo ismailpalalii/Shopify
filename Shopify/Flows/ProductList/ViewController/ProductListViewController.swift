@@ -48,7 +48,10 @@ final class ProductListViewController: UIViewController {
 
         setupSubviews()
         setupConstraints()
+        setupCollectionView()
+        setupViewModel()
 
+        viewModel.fetchFirstPage()
     }
 
     private func setupSubviews() {
@@ -82,5 +85,74 @@ final class ProductListViewController: UIViewController {
             emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+
+    private func setupCollectionView() {
+        collectionView.delegate = self
+        collectionView.dataSource = self
+        collectionView.register(ProductCell.self, forCellWithReuseIdentifier: "ProductCell")
+        collectionView.backgroundColor = .white
+    }
+
+    private func setupViewModel() {
+        viewModel.onStateChange = { [weak self] state in
+            DispatchQueue.main.async {
+                self?.reload(for: state)
+            }
+        }
+    }
+
+    private func reload(for state: ProductListViewModel.State) {
+        switch state {
+        case .idle:
+            loadingView.stopAnimating()
+            emptyLabel.isHidden = true
+        case .loading:
+            loadingView.startAnimating()
+            emptyLabel.isHidden = true
+        case .loaded:
+            loadingView.stopAnimating()
+            emptyLabel.isHidden = true
+            collectionView.reloadData()
+        case .empty:
+            loadingView.stopAnimating()
+            emptyLabel.isHidden = false
+            collectionView.reloadData()
+        case .error(let error):
+            loadingView.stopAnimating()
+            emptyLabel.isHidden = false
+            emptyLabel.text = "Error: \(error.localizedDescription)"
+        }
+    }
+}
+
+// MARK: - UICollectionViewDataSource & Delegate
+
+extension ProductListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func numberOfSections(in collectionView: UICollectionView) -> Int { 1 }
+
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        viewModel.products.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ProductCell", for: indexPath) as? ProductCell else {
+            return UICollectionViewCell()
+        }
+        let product = viewModel.products[indexPath.item]
+        cell.configure(with: product)
+        cell.addToCartHandler = { [weak self] in
+            self?.viewModel.addToCart(product)
+        }
+        return cell
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let frameHeight = scrollView.frame.size.height
+        if offsetY > contentHeight - frameHeight * 2 {
+            viewModel.fetchNextPage()
+        }
     }
 }
