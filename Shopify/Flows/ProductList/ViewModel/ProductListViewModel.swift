@@ -56,6 +56,15 @@ final class ProductListViewModel {
         }
     }
 
+    func makeProductDetailViewModel(for product: Product) -> ProductDetailViewModel {
+        return ProductDetailViewModel(
+            product: product,
+            productService: self.productService,
+            coreDataService: self.coreDataService,
+            notificationManager: self.notificationManager
+        )
+    }
+    
     func fetchFirstPage() {
         products = []
         filteredProducts = []
