@@ -7,4 +7,7 @@
         <attribute name="price" optional="YES" attributeType="String"/>
         <attribute name="quantity" optional="YES" attributeType="String"/>
     </entity>
+    <entity name="FavoriteProduct" representedClassName="FavoriteProduct" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="String"/>
+    </entity>
 </model>

@@ -111,4 +111,52 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
             }
         }
     }
+    
+    func saveFavoriteProductID(_ id: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        context.perform {
+            guard let entity = NSEntityDescription.entity(forEntityName: "FavoriteProduct", in: self.context) else {
+                completion(.failure(CoreDataServiceError.entityNotFound))
+                return
+            }
+            let fav = NSManagedObject(entity: entity, insertInto: self.context)
+            fav.setValue(id, forKey: "id")
+            do {
+                try self.context.save()
+                completion(.success(()))
+            } catch {
+                completion(.failure(CoreDataServiceError.saveFailed(error)))
+            }
+        }
+    }
+
+    func removeFavoriteProductID(_ id: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        context.perform {
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "FavoriteProduct")
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id)
+            do {
+                if let results = try self.context.fetch(fetchRequest) as? [NSManagedObject], let fav = results.first {
+                    self.context.delete(fav)
+                    try self.context.save()
+                    completion(.success(()))
+                } else {
+                    completion(.failure(CoreDataServiceError.entityNotFound))
+                }
+            } catch {
+                completion(.failure(CoreDataServiceError.deleteFailed(error)))
+            }
+        }
+    }
+
+    func loadFavoriteProductIDs(completion: @escaping (Result<[String], Error>) -> Void) {
+        context.perform {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "FavoriteProduct")
+            do {
+                let items = try self.context.fetch(fetchRequest)
+                let ids = items.compactMap { $0.value(forKey: "id") as? String }
+                completion(.success(ids))
+            } catch {
+                completion(.failure(CoreDataServiceError.fetchFailed(error)))
+            }
+        }
+    }
 }

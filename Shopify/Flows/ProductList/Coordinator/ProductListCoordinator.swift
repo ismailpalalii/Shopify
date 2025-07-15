@@ -28,7 +28,6 @@ final class ProductListCoordinator: Coordinator {
         )
 
         let productListVC = ProductListViewController(viewModel: viewModel)
-        productListVC.title = "Products"
         navigationController.setViewControllers([productListVC], animated: false)
     }
 }
