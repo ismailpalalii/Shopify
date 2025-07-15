@@ -42,6 +42,24 @@ final class ProductCell: UICollectionViewCell {
         lbl.lineBreakMode = .byTruncatingTail
         return lbl
     }()
+    private let brandLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.font = .systemFont(ofSize: 13, weight: .medium)
+        lbl.textColor = .darkGray
+        lbl.numberOfLines = 1
+        lbl.backgroundColor = .clear
+        lbl.textAlignment = .left
+        return lbl
+    }()
+    private let modelLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.font = .systemFont(ofSize: 13, weight: .regular)
+        lbl.textColor = .gray
+        lbl.numberOfLines = 1
+        lbl.backgroundColor = .clear
+        lbl.textAlignment = .left
+        return lbl
+    }()
     private let addButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("Add to Cart", for: .normal)
@@ -72,7 +90,7 @@ final class ProductCell: UICollectionViewCell {
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     private func setup() {
-        [productImageView, loadingView, starImageView, priceLabel, nameLabel, addButton].forEach {
+        [productImageView, loadingView, starImageView, priceLabel, nameLabel, brandLabel, modelLabel, addButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview($0)
         }
@@ -80,7 +98,7 @@ final class ProductCell: UICollectionViewCell {
             productImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
             productImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 14),
             productImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -14),
-            productImageView.heightAnchor.constraint(equalTo: productImageView.widthAnchor, multiplier: 1.0),
+            productImageView.heightAnchor.constraint(equalTo: productImageView.widthAnchor, multiplier: 0.8),
 
             loadingView.centerXAnchor.constraint(equalTo: productImageView.centerXAnchor),
             loadingView.centerYAnchor.constraint(equalTo: productImageView.centerYAnchor),
@@ -90,7 +108,7 @@ final class ProductCell: UICollectionViewCell {
             starImageView.widthAnchor.constraint(equalToConstant: 24),
             starImageView.heightAnchor.constraint(equalToConstant: 24),
 
-            priceLabel.topAnchor.constraint(equalTo: productImageView.bottomAnchor, constant: 12),
+            priceLabel.topAnchor.constraint(equalTo: productImageView.bottomAnchor, constant: 8),
             priceLabel.leadingAnchor.constraint(equalTo: productImageView.leadingAnchor),
             priceLabel.trailingAnchor.constraint(equalTo: productImageView.trailingAnchor),
 
@@ -98,7 +116,17 @@ final class ProductCell: UICollectionViewCell {
             nameLabel.leadingAnchor.constraint(equalTo: productImageView.leadingAnchor),
             nameLabel.trailingAnchor.constraint(equalTo: productImageView.trailingAnchor),
 
-            addButton.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 14),
+            brandLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 6),
+            brandLabel.leadingAnchor.constraint(equalTo: productImageView.leadingAnchor),
+            brandLabel.trailingAnchor.constraint(equalTo: productImageView.trailingAnchor),
+            brandLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 18),
+
+            modelLabel.topAnchor.constraint(equalTo: brandLabel.bottomAnchor, constant: 3),
+            modelLabel.leadingAnchor.constraint(equalTo: productImageView.leadingAnchor),
+            modelLabel.trailingAnchor.constraint(equalTo: productImageView.trailingAnchor),
+            modelLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 18),
+
+            addButton.topAnchor.constraint(equalTo: modelLabel.bottomAnchor, constant: 8),
             addButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 14),
             addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -14),
             addButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
@@ -115,6 +143,11 @@ final class ProductCell: UICollectionViewCell {
     func configure(with product: Product, isFavorite: Bool = false) {
         nameLabel.text = product.name
         priceLabel.text = "\(product.price) ₺"
+        
+        // Display brand and model from product data
+        brandLabel.text = product.brand.isEmpty ? "Brand: -" : "Brand: \(product.brand)"
+        modelLabel.text = product.model.isEmpty ? "Model: -" : "Model: \(product.model)"
+        
         loadingView.startAnimating()
         productImageView.image = nil
 

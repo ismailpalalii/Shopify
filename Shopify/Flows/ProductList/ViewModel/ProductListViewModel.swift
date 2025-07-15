@@ -62,9 +62,16 @@ final class ProductListViewModel {
     private(set) var favoriteProductIDs: Set<String> = []
     private var searchText: String = ""
     private var filterData: FilterData = FilterData()
+    
+    // For filter data - cache all products to extract brands/models
+    private var allProductsCache: [Product] = []
+    private var isAllProductsCached = false
 
     var onStateChange: ((State) -> Void)?
     var isFirstPage: Bool { currentPage == 1 }
+    var isFilteringActive: Bool { 
+        return !filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty || !searchText.isEmpty
+    }
 
     init(
         productService: ProductServiceProtocol,
@@ -100,6 +107,11 @@ final class ProductListViewModel {
         filteredProducts = []
         currentPage = 1
         isLastPage = false
+        
+        // Clear all products cache when refreshing
+        allProductsCache = []
+        isAllProductsCached = false
+        
         fetchProducts(isInitial: true)
     }
 
@@ -156,6 +168,12 @@ final class ProductListViewModel {
         filterAndSortProducts()
     }
     
+    func clearAllFilters() {
+        filterData = FilterData()
+        searchText = ""
+        filterAndSortProducts()
+    }
+    
     func applyFilter(_ filter: FilterData) {
         filterData = filter
         filterAndSortProducts()
@@ -164,18 +182,45 @@ final class ProductListViewModel {
     func getCurrentFilterData() -> FilterData {
         var currentFilterData = filterData
         
-        // Extract unique brands and models from current products
-        let uniqueBrands = Array(Set(products.map { $0.brand })).filter { !$0.isEmpty }.sorted()
-        let uniqueModels = Array(Set(products.map { $0.model })).filter { !$0.isEmpty }.sorted()
+        // Use cached all products if available, otherwise use current products
+        let productsToUse = isAllProductsCached ? allProductsCache : products
+        
+        // Extract unique brands and models from all products
+        let uniqueBrands = Array(Set(productsToUse.map { $0.brand })).filter { !$0.isEmpty }.sorted()
+        let uniqueModels = Array(Set(productsToUse.map { $0.model })).filter { !$0.isEmpty }.sorted()
         
         currentFilterData.availableBrands = uniqueBrands
         currentFilterData.availableModels = uniqueModels
         
         return currentFilterData
     }
+    
+    func fetchAllProductsForFilter(completion: @escaping () -> Void) {
+        // If already cached, return immediately
+        if isAllProductsCached {
+            completion()
+            return
+        }
+        
+        // Fetch all products for filter purposes
+        productService.fetchAllProducts { [weak self] result in
+            switch result {
+            case .success(let allProducts):
+                self?.allProductsCache = allProducts
+                self?.isAllProductsCached = true
+                completion()
+            case .failure:
+                // If fails, use test data
+                self?.isAllProductsCached = false
+                completion()
+            }
+        }
+    }
 
     private func filterAndSortProducts() {
-        var filtered = products
+        // Use all products if cached and filtering is active, otherwise use pagination products
+        let productsToFilter = (isAllProductsCached && (!filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty)) ? allProductsCache : products
+        var filtered = productsToFilter
         
         // Apply search filter
         if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -186,14 +231,14 @@ final class ProductListViewModel {
         // Apply brand filter
         if !filterData.selectedBrands.isEmpty {
             filtered = filtered.filter { product in
-                filterData.selectedBrands.contains(product.brand)
+                return filterData.selectedBrands.contains(product.brand)
             }
         }
         
         // Apply model filter
         if !filterData.selectedModels.isEmpty {
             filtered = filtered.filter { product in
-                filterData.selectedModels.contains(product.model)
+                return filterData.selectedModels.contains(product.model)
             }
         }
         

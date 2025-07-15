@@ -19,6 +19,7 @@ final class FilterViewController: UIViewController {
     private let headerView = UIView()
     private let closeButton = UIButton(type: .system)
     private let titleLabel = UILabel()
+    private let clearButton = UIButton(type: .system)
     private let headerSeparator = UIView()
     
     // Main Scroll View
@@ -85,6 +86,12 @@ final class FilterViewController: UIViewController {
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
         headerView.addSubview(titleLabel)
+        
+        clearButton.setTitle("Clear", for: .normal)
+        clearButton.setTitleColor(.systemBlue, for: .normal)
+        clearButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        clearButton.addTarget(self, action: #selector(clearTapped), for: .touchUpInside)
+        headerView.addSubview(clearButton)
         
         headerSeparator.backgroundColor = .separator
         headerView.addSubview(headerSeparator)
@@ -175,7 +182,7 @@ final class FilterViewController: UIViewController {
     }
     
     private func setupConstraints() {
-        [headerView, mainScrollView, contentView, sortByLabel, sortByStackView, brandSeparator, brandLabel, brandSearchBar, brandScrollView, brandStackView, modelSeparator, modelLabel, modelSearchBar, modelScrollView, modelStackView, primaryButton, closeButton, titleLabel, headerSeparator].forEach {
+        [headerView, mainScrollView, contentView, sortByLabel, sortByStackView, brandSeparator, brandLabel, brandSearchBar, brandScrollView, brandStackView, modelSeparator, modelLabel, modelSearchBar, modelScrollView, modelStackView, primaryButton, closeButton, titleLabel, clearButton, headerSeparator].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
         
@@ -193,6 +200,11 @@ final class FilterViewController: UIViewController {
             
             titleLabel.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
+            
+            clearButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
+            clearButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
+            clearButton.widthAnchor.constraint(equalToConstant: 50),
+            clearButton.heightAnchor.constraint(equalToConstant: 30),
             
             headerSeparator.leadingAnchor.constraint(equalTo: headerView.leadingAnchor),
             headerSeparator.trailingAnchor.constraint(equalTo: headerView.trailingAnchor),
@@ -329,9 +341,17 @@ final class FilterViewController: UIViewController {
         
         // Update scroll view content size
         DispatchQueue.main.async { [weak self] in
-            self?.brandScrollView.layoutIfNeeded()
-            let contentHeight = self?.brandStackView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
-            self?.brandScrollView.contentSize = CGSize(width: self?.brandScrollView.frame.width ?? 0, height: contentHeight + 16) // +16 for padding
+            guard let self = self else { return }
+            self.brandScrollView.layoutIfNeeded()
+            self.brandStackView.layoutIfNeeded()
+            
+            let contentHeight = self.brandStackView.systemLayoutSizeFitting(
+                CGSize(width: self.brandScrollView.frame.width - 16, height: UIView.layoutFittingCompressedSize.height),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+            
+            self.brandScrollView.contentSize = CGSize(width: self.brandScrollView.frame.width, height: max(contentHeight + 16, 50))
         }
     }
     
@@ -352,9 +372,17 @@ final class FilterViewController: UIViewController {
         
         // Update scroll view content size
         DispatchQueue.main.async { [weak self] in
-            self?.modelScrollView.layoutIfNeeded()
-            let contentHeight = self?.modelStackView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
-            self?.modelScrollView.contentSize = CGSize(width: self?.modelScrollView.frame.width ?? 0, height: contentHeight + 16) // +16 for padding
+            guard let self = self else { return }
+            self.modelScrollView.layoutIfNeeded()
+            self.modelStackView.layoutIfNeeded()
+            
+            let contentHeight = self.modelStackView.systemLayoutSizeFitting(
+                CGSize(width: self.modelScrollView.frame.width - 16, height: UIView.layoutFittingCompressedSize.height),
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            ).height
+            
+            self.modelScrollView.contentSize = CGSize(width: self.modelScrollView.frame.width, height: max(contentHeight + 16, 50))
         }
     }
     
@@ -386,11 +414,12 @@ final class FilterViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 16)
         button.titleLabel?.numberOfLines = 1
         button.titleLabel?.adjustsFontSizeToFitWidth = true
-        button.titleLabel?.minimumScaleFactor = 0.7
+        button.titleLabel?.minimumScaleFactor = 0.6
+        button.titleLabel?.lineBreakMode = .byTruncatingTail
         button.contentHorizontalAlignment = .leading
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)
-        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 0)
-        button.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 8)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
+        button.heightAnchor.constraint(equalToConstant: 44).isActive = true
         return button
     }
     
@@ -426,6 +455,25 @@ final class FilterViewController: UIViewController {
     
     @objc private func closeTapped() {
         dismiss(animated: true)
+    }
+    
+    @objc private func clearTapped() {
+        // Clear all filters
+        filterData.sortOption = .oldToNew
+        filterData.selectedBrands.removeAll()
+        filterData.selectedModels.removeAll()
+        filterData.brandSearchText = ""
+        filterData.modelSearchText = ""
+        
+        // Reset search bars
+        brandSearchBar.text = ""
+        modelSearchBar.text = ""
+        
+        // Refresh UI
+        populateData()
+        
+        // Apply cleared filters
+        delegate?.filterViewController(self, didApplyFilter: filterData)
     }
     
     @objc private func primaryTapped() {
