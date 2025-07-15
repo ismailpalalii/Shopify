@@ -108,7 +108,7 @@ final class ProductListViewModel {
         currentPage = 1
         isLastPage = false
         
-        // Clear all products cache when refreshing
+        // Clear all products cache when refreshing to start fresh
         allProductsCache = []
         isAllProductsCached = false
         
@@ -165,12 +165,25 @@ final class ProductListViewModel {
 
     func setSearchText(_ text: String) {
         searchText = text
-        filterAndSortProducts()
+        
+        // If search is not empty and we don't have all products cached, fetch them first
+        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isAllProductsCached {
+            fetchAllProductsForFilter { [weak self] in
+                self?.filterAndSortProducts()
+            }
+        } else {
+            filterAndSortProducts()
+        }
     }
     
     func clearAllFilters() {
         filterData = FilterData()
         searchText = ""
+        
+        // Clear all products cache when clearing filters to return to pagination mode
+        allProductsCache = []
+        isAllProductsCached = false
+        
         filterAndSortProducts()
     }
     
@@ -202,7 +215,7 @@ final class ProductListViewModel {
             return
         }
         
-        // Fetch all products for filter purposes
+        // Fetch all products for filter/search purposes
         productService.fetchAllProducts { [weak self] result in
             switch result {
             case .success(let allProducts):
@@ -210,7 +223,7 @@ final class ProductListViewModel {
                 self?.isAllProductsCached = true
                 completion()
             case .failure:
-                // If fails, use test data
+                // If fails, use current products
                 self?.isAllProductsCached = false
                 completion()
             }
@@ -218,8 +231,8 @@ final class ProductListViewModel {
     }
 
     private func filterAndSortProducts() {
-        // Use all products if cached and filtering is active, otherwise use pagination products
-        let productsToFilter = (isAllProductsCached && (!filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty)) ? allProductsCache : products
+        // Use all products if cached and any filter/search is active, otherwise use pagination products
+        let productsToFilter = (isAllProductsCached && (isFilteringActive || !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)) ? allProductsCache : products
         var filtered = productsToFilter
         
         // Apply search filter

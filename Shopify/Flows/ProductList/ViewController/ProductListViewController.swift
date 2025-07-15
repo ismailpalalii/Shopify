@@ -324,8 +324,22 @@ extension ProductListViewController: UISearchBarDelegate {
     }
     
     private func performSearch(with searchText: String) {
+        // Show loading indicator if search is not empty
+        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            loadingView.startAnimating()
+            loadingView.isHidden = false
+        }
+        
         viewModel.setSearchText(searchText)
         updateFilterButtonTitle()
+        
+        // Hide loading indicator after a short delay
+        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.loadingView.stopAnimating()
+                self?.loadingView.isHidden = true
+            }
+        }
     }
     
     @objc private func filterButtonTapped() {
