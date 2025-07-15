@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA4AD2E267BE700A52638 /* Factory */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0C1BA4872E2679B700A52638 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = Shopify;
 			packageProductDependencies = (
+				0C1BA4AD2E267BE700A52638 /* Factory */,
 			);
 			productName = Shopify;
 			productReference = 0C1BA46D2E2679B500A52638 /* Shopify.app */;
@@ -208,6 +214,9 @@
 			);
 			mainGroup = 0C1BA4642E2679B500A52638;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0C1BA46E2E2679B500A52638 /* Products */;
 			projectDirPath = "";
@@ -579,6 +588,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0C1BA4AD2E267BE700A52638 /* Factory */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = Factory;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0C1BA4652E2679B500A52638 /* Project object */;
 }
