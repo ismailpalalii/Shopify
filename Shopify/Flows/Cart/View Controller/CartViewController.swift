@@ -11,6 +11,19 @@ import UIKit
 final class CartViewController: UIViewController {
     private let viewModel: CartViewModel
 
+    private let blueHeader: UIView = {
+        let v = UIView()
+        v.backgroundColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        return v
+    }()
+    private let titleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "E-Market"
+        lbl.font = UIFont.boldSystemFont(ofSize: 22)
+        lbl.textColor = .white
+        return lbl
+    }()
+    
     private let tableView = UITableView()
     private let totalPriceLabel = UILabel()
     private let completeButton = UIButton(type: .system)
@@ -34,14 +47,19 @@ final class CartViewController: UIViewController {
     }
 
     private func setupViews() {
-        title = "Cart"
-        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationController?.setNavigationBarHidden(true, animated: false)
+
+        [blueHeader, tableView, totalPriceLabel, completeButton, emptyLabel].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        blueHeader.addSubview(titleLabel)
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         tableView.register(CartItemCell.self, forCellReuseIdentifier: CartItemCell.identifier)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.tableFooterView = UIView()
-        view.addSubview(tableView)
 
         totalPriceLabel.font = .boldSystemFont(ofSize: 22)
         totalPriceLabel.textColor = UIColor(red: 0/255, green: 82/255, blue: 204/255, alpha: 1)
@@ -66,13 +84,16 @@ final class CartViewController: UIViewController {
     }
 
     private func setupConstraints() {
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        totalPriceLabel.translatesAutoresizingMaskIntoConstraints = false
-        completeButton.translatesAutoresizingMaskIntoConstraints = false
-        emptyLabel.translatesAutoresizingMaskIntoConstraints = false
-
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            blueHeader.topAnchor.constraint(equalTo: view.topAnchor),
+            blueHeader.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            blueHeader.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            blueHeader.heightAnchor.constraint(equalToConstant: 100),
+
+            titleLabel.centerXAnchor.constraint(equalTo: blueHeader.centerXAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: blueHeader.bottomAnchor, constant: -14),
+
+            tableView.topAnchor.constraint(equalTo: blueHeader.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
@@ -138,6 +159,19 @@ extension CartViewController: UITableViewDataSource, UITableViewDelegate {
         }
 
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let selectedProduct = viewModel.cartItems[indexPath.row]
+        navigateToProductDetail(with: selectedProduct)
+    }
+    
+    private func navigateToProductDetail(with product: Product) {
+        let detailVM = viewModel.makeProductDetailViewModel(for: product)
+        let detailVC = ProductDetailViewController(viewModel: detailVM)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

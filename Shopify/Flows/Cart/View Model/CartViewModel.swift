@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Factory
 
 final class CartViewModel {
     private let coreDataService: CoreDataServiceProtocol
@@ -155,5 +156,14 @@ final class CartViewModel {
             let quantity = Double(product.quantity ?? 1)
             return total + (price * quantity)
         }
+    }
+    
+    func makeProductDetailViewModel(for product: Product) -> ProductDetailViewModel {
+        return ProductDetailViewModel(
+            product: product,
+            productService: Container.shared.productService(),
+            coreDataService: coreDataService,
+            notificationManager: notificationManager
+        )
     }
 }

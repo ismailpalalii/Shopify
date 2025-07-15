@@ -201,6 +201,9 @@ extension NSManagedObject {
         else { return nil }
         
         let quantity = value(forKey: "quantity") as? Int16 ?? 0
+        let brand = value(forKey: "brand") as? String ?? ""
+        let model = value(forKey: "model") as? String ?? ""
+        let description = value(forKey: "productDescription") as? String ?? ""
         
         return Product(
             id: id,
@@ -208,9 +211,9 @@ extension NSManagedObject {
             name: name,
             image: image,
             price: price,
-            description: "",
-            model: "",
-            brand: "",
+            description: description,
+            model: model,
+            brand: brand,
             quantity: quantity
         )
     }
@@ -220,6 +223,9 @@ extension NSManagedObject {
         setValue(product.name, forKey: "name")
         setValue(product.price, forKey: "price")
         setValue(product.image, forKey: "image")
+        setValue(product.brand, forKey: "brand")
+        setValue(product.model, forKey: "model")
+        setValue(product.description, forKey: "productDescription")
         setValue(product.quantity, forKey: "quantity")
     }
 }
