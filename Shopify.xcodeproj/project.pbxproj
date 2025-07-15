@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA4AD2E267BE700A52638 /* Factory */; };
+		0C1BA50A2E267DEA00A52638 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA5092E267DEA00A52638 /* Alamofire */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */,
+				0C1BA50A2E267DEA00A52638 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +133,7 @@
 			name = Shopify;
 			packageProductDependencies = (
 				0C1BA4AD2E267BE700A52638 /* Factory */,
+				0C1BA5092E267DEA00A52638 /* Alamofire */,
 			);
 			productName = Shopify;
 			productReference = 0C1BA46D2E2679B500A52638 /* Shopify.app */;
@@ -216,6 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */,
+				0C1BA5082E267DEA00A52638 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0C1BA46E2E2679B500A52638 /* Products */;
@@ -598,6 +602,14 @@
 				minimumVersion = 2.5.3;
 			};
 		};
+		0C1BA5082E267DEA00A52638 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -605,6 +617,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */;
 			productName = Factory;
+		};
+		0C1BA5092E267DEA00A52638 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1BA5082E267DEA00A52638 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
