@@ -9,8 +9,8 @@
 import Foundation
 
 protocol CoreDataServiceProtocol {
-    func saveCartItem(_ product: Product)
-    func removeCartItem(_ product: Product)
-    func loadCartItems() -> [Product]
-    func updateCartItem(_ product: Product)
+    func saveCartItem(_ product: Product, completion: @escaping (Result<Void, Error>) -> Void)
+    func removeCartItem(_ product: Product, completion: @escaping (Result<Void, Error>) -> Void)
+    func loadCartItems(completion: @escaping (Result<[Product], Error>) -> Void)
+    func updateCartItem(_ product: Product, quantity: String, completion: @escaping (Result<Void, Error>) -> Void)
 }
