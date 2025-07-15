@@ -192,6 +192,20 @@ extension ProductListViewController: UISearchBarDelegate {
 }
 
 // MARK: - CollectionView DataSource & Delegate
+
+extension ProductListViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let selectedProduct = viewModel.filteredProducts[indexPath.item]
+        navigateToProductDetail(with: selectedProduct)
+    }
+
+    private func navigateToProductDetail(with product: Product) {
+        let detailVM = viewModel.makeProductDetailViewModel(for: product)
+        let detailVC = ProductDetailViewController(viewModel: detailVM)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+}
+
 extension ProductListViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func numberOfSections(in collectionView: UICollectionView) -> Int { 1 }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
