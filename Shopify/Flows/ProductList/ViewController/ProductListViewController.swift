@@ -84,6 +84,7 @@ final class ProductListViewController: UIViewController {
         setupCollectionView()
         setupViewModel()
         searchBar.delegate = self
+        filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
         viewModel.fetchFirstPage()
         setupDismissKeyboardGesture()
     }
@@ -314,6 +315,20 @@ extension ProductListViewController: UISearchBarDelegate {
     
     private func performSearch(with searchText: String) {
         viewModel.setSearchText(searchText)
+    }
+    
+    @objc private func filterButtonTapped() {
+        let filterVC = FilterViewController(filterData: viewModel.getCurrentFilterData())
+        filterVC.delegate = self
+        filterVC.modalPresentationStyle = .fullScreen
+        present(filterVC, animated: true)
+    }
+}
+
+// MARK: - FilterViewControllerDelegate
+extension ProductListViewController: FilterViewControllerDelegate {
+    func filterViewController(_ controller: FilterViewController, didApplyFilter filterData: FilterData) {
+        viewModel.applyFilter(filterData)
     }
 }
 
