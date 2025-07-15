@@ -4,6 +4,7 @@
 //
 //  Created by İsmail Palalı on 15.07.2025.
 //
+
 import UIKit
 
 final class ProductListViewController: UIViewController {
@@ -67,7 +68,6 @@ final class ProductListViewController: UIViewController {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(nibName: nil, bundle: nil)
     }
-
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     override func viewDidLoad() {
@@ -93,14 +93,12 @@ final class ProductListViewController: UIViewController {
     }
 
     private func setupConstraints() {
-        // --- HEADER MAVİ ALAN ---
         NSLayoutConstraint.activate([
             blueHeader.topAnchor.constraint(equalTo: view.topAnchor),
             blueHeader.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             blueHeader.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            blueHeader.heightAnchor.constraint(equalToConstant: 100), // Daha yüksek, notch'lı telefonlar için
+            blueHeader.heightAnchor.constraint(equalToConstant: 100),
 
-            // Title tam ortada ve notch altında güzel dursun:
             titleLabel.centerXAnchor.constraint(equalTo: blueHeader.centerXAnchor),
             titleLabel.bottomAnchor.constraint(equalTo: blueHeader.bottomAnchor, constant: -14),
 
@@ -135,6 +133,7 @@ final class ProductListViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.backgroundColor = .white
         collectionView.register(ProductCell.self, forCellWithReuseIdentifier: "ProductCell")
+        collectionView.register(LoadingFooterCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "LoadingFooterCell")
     }
 
     private func setupViewModel() {
@@ -146,28 +145,35 @@ final class ProductListViewController: UIViewController {
     }
 
     private func reload(for state: ProductListViewModel.State) {
+        // İlk sayfa yüklemede ortada büyük loading spinner
+        if viewModel.isFirstPage && viewModel.isFetching {
+            loadingView.startAnimating()
+            loadingView.isHidden = false
+        } else {
+            loadingView.stopAnimating()
+            loadingView.isHidden = true
+        }
         switch state {
         case .idle:
-            loadingView.stopAnimating()
             emptyLabel.isHidden = true
         case .loading:
-            loadingView.startAnimating()
             emptyLabel.isHidden = true
         case .loaded:
-            loadingView.stopAnimating()
             emptyLabel.isHidden = true
             collectionView.reloadData()
+            collectionView.collectionViewLayout.invalidateLayout()
         case .empty:
-            loadingView.stopAnimating()
             emptyLabel.isHidden = false
             collectionView.reloadData()
+            collectionView.collectionViewLayout.invalidateLayout()
         case .error(let error):
-            loadingView.stopAnimating()
             emptyLabel.isHidden = false
             emptyLabel.text = "Error: \(error.localizedDescription)"
+            collectionView.reloadData()
+            collectionView.collectionViewLayout.invalidateLayout()
         }
     }
-    
+
     private func setupDismissKeyboardGesture() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(endEditing))
         tap.cancelsTouchesInView = false
@@ -186,7 +192,7 @@ extension ProductListViewController: UISearchBarDelegate {
 }
 
 // MARK: - CollectionView DataSource & Delegate
-extension ProductListViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension ProductListViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func numberOfSections(in collectionView: UICollectionView) -> Int { 1 }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         viewModel.filteredProducts.count
@@ -212,6 +218,29 @@ extension ProductListViewController: UICollectionViewDataSource, UICollectionVie
         return cell
     }
 
+    // Footer Loading Spinner
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionFooter {
+            let footer = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "LoadingFooterCell", for: indexPath) as! LoadingFooterCell
+            if viewModel.isFetching && !viewModel.isFirstPage && !viewModel.isLastPage {
+                footer.activityIndicator.startAnimating()
+                footer.isHidden = false
+            } else {
+                footer.activityIndicator.stopAnimating()
+                footer.isHidden = true
+            }
+            return footer
+        }
+        return UICollectionReusableView()
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        if viewModel.isFetching && !viewModel.isFirstPage && !viewModel.isLastPage && !viewModel.filteredProducts.isEmpty {
+            return CGSize(width: collectionView.bounds.width, height: 70)
+        }
+        return .zero
+    }
+
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard !viewModel.isFetching, !viewModel.isLastPage else { return }
         let offsetY = scrollView.contentOffset.y
@@ -221,4 +250,20 @@ extension ProductListViewController: UICollectionViewDataSource, UICollectionVie
             viewModel.fetchNextPage()
         }
     }
+}
+
+// MARK: - LoadingFooterCell
+final class LoadingFooterCell: UICollectionReusableView {
+    let activityIndicator = UIActivityIndicatorView(style: .large)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        activityIndicator.color = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        addSubview(activityIndicator)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
+    }
+    required init?(coder: NSCoder) { fatalError() }
 }

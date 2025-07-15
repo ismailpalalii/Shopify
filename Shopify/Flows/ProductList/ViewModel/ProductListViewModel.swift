@@ -34,6 +34,7 @@ final class ProductListViewModel {
     private var searchText: String = ""
 
     var onStateChange: ((State) -> Void)?
+    var isFirstPage: Bool { currentPage == 1 }
 
     init(
         productService: ProductServiceProtocol,
@@ -72,6 +73,7 @@ final class ProductListViewModel {
     private func fetchProducts(isInitial: Bool) {
         if isInitial { state = .loading }
         isFetching = true
+        onStateChange?(state) // state zaten güncel, spinner için tetikleyelim
         productService.fetchProducts(page: currentPage, limit: pageLimit) { [weak self] result in
             guard let self = self else { return }
             self.isFetching = false
@@ -87,6 +89,7 @@ final class ProductListViewModel {
             case .failure(let error):
                 self.state = .error(error)
             }
+            self.onStateChange?(self.state)
         }
     }
 
@@ -103,6 +106,7 @@ final class ProductListViewModel {
             filteredProducts = products.filter { $0.name.lowercased().contains(lower) }
         }
         state = filteredProducts.isEmpty ? .empty : .loaded
+        onStateChange?(state)
     }
 
     func addToCart(_ product: Product) {
