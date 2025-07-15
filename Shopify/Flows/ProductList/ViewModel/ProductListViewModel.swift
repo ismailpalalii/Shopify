@@ -13,7 +13,36 @@ final class ProductListViewModel {
         case loading
         case loaded
         case empty
-        case error(Error)
+        case error(AppError)
+    }
+    
+    enum AppError: LocalizedError {
+        case networkUnavailable
+        case serverError
+        case invalidData
+        case unknown(Error)
+        
+        var errorDescription: String? {
+            switch self {
+            case .networkUnavailable:
+                return "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin."
+            case .serverError:
+                return "Sunucu hatası. Lütfen daha sonra tekrar deneyin."
+            case .invalidData:
+                return "Geçersiz veri. Lütfen uygulamayı yeniden başlatın."
+            case .unknown(let error):
+                return "Beklenmeyen hata: \(error.localizedDescription)"
+            }
+        }
+        
+        var canRetry: Bool {
+            switch self {
+            case .networkUnavailable, .serverError:
+                return true
+            case .invalidData, .unknown:
+                return false
+            }
+        }
     }
 
     private let productService: ProductServiceProtocol
@@ -96,10 +125,29 @@ final class ProductListViewModel {
                     self.filterProducts(with: self.searchText)
                 }
             case .failure(let error):
-                self.state = .error(error)
+                self.state = .error(self.mapError(error))
             }
             self.onStateChange?(self.state)
         }
+    }
+    
+    private func mapError(_ error: Error) -> AppError {
+        // Map different error types to user-friendly messages
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet, .networkConnectionLost:
+                return .networkUnavailable
+            case .timedOut, .cannotFindHost:
+                return .serverError
+            default:
+                return .unknown(error)
+            }
+        }
+        return .unknown(error)
+    }
+    
+    func retryFetch() {
+        fetchProducts(isInitial: true)
     }
 
     func setSearchText(_ text: String) {

@@ -7,6 +7,8 @@
 import UIKit
 
 final class TabBarCoordinator {
+    private var childCoordinators: [Coordinator] = []
+    
     func start() -> UITabBarController {
         let tabBarController = MainTabBarController()
         
@@ -14,12 +16,14 @@ final class TabBarCoordinator {
         let homeNav = UINavigationController()
         let productListCoordinator = ProductListCoordinator(navigationController: homeNav)
         productListCoordinator.start()
+        childCoordinators.append(productListCoordinator)
         homeNav.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), tag: 0)
         
         // Cart
         let cartNav = UINavigationController()
         let cartCoordinator = CartCoordinator(navigationController: cartNav)
         cartCoordinator.start()
+        childCoordinators.append(cartCoordinator)
         cartNav.tabBarItem = UITabBarItem(title: "Cart", image: UIImage(systemName: "cart"), tag: 1)
         
         
@@ -33,5 +37,9 @@ final class TabBarCoordinator {
         
         tabBarController.viewControllers = [homeNav, cartNav, favNav, profileNav]
         return tabBarController
+    }
+    
+    func childDidFinish(_ child: Coordinator) {
+        childCoordinators.removeAll { $0 === child }
     }
 }

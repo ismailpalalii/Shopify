@@ -9,7 +9,7 @@ import UIKit
 
 final class AppCoordinator {
     let window: UIWindow
-    var tabBarCoordinator: TabBarCoordinator?
+    private var tabBarCoordinator: TabBarCoordinator?
 
     init(window: UIWindow) {
         self.window = window

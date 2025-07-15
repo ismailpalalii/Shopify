@@ -5,10 +5,12 @@
 //  Created by İsmail Palalı on 15.07.2025.
 //
 
+import Foundation
 
 final class CartViewModel {
     private let coreDataService: CoreDataServiceProtocol
     private let notificationManager: NotificationManagerProtocol
+    private var cartObserver: NSObjectProtocol?
 
     private(set) var cartItems: [Product] = [] {
         didSet { onCartItemsChanged?(cartItems) }
@@ -28,9 +30,15 @@ final class CartViewModel {
         
         observeCartChanges()
     }
+    
+    deinit {
+        if let observer = cartObserver {
+            notificationManager.remove(observer: observer)
+        }
+    }
 
     private func observeCartChanges() {
-        _ = notificationManager.observe(name: .cartUpdated) { [weak self] _ in
+        cartObserver = notificationManager.observe(name: .cartUpdated) { [weak self] _ in
             self?.loadCartItems()
         }
     }

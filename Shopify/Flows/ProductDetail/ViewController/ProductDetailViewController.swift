@@ -50,13 +50,22 @@ final class ProductDetailViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        // Hide default nav bar
-        navigationController?.setNavigationBarHidden(true, animated: false)
-        
         setupViews()
         setupConstraints()
         setupBindings()
         updateUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Hide default nav bar
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Restore navigation bar for other screens
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
     private func setupViews() {

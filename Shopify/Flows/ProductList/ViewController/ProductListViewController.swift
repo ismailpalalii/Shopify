@@ -9,6 +9,8 @@ import UIKit
 
 final class ProductListViewController: UIViewController {
     private let viewModel: ProductListViewModel
+    private var searchDebounceTimer: Timer?
+    private let searchDebounceInterval: TimeInterval = 0.5
 
     private let blueHeader: UIView = {
         let v = UIView()
@@ -69,6 +71,10 @@ final class ProductListViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    deinit {
+        searchDebounceTimer?.invalidate()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -168,7 +174,7 @@ final class ProductListViewController: UIViewController {
             collectionView.collectionViewLayout.invalidateLayout()
         case .error(let error):
             emptyLabel.isHidden = false
-            emptyLabel.text = "Error: \(error.localizedDescription)"
+            showError(error)
             collectionView.reloadData()
             collectionView.collectionViewLayout.invalidateLayout()
         }
@@ -182,14 +188,29 @@ final class ProductListViewController: UIViewController {
     @objc private func endEditing() {
         view.endEditing(true)
     }
-}
-
-// MARK: - SearchBar Delegate
-extension ProductListViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        viewModel.setSearchText(searchText)
+    
+    private func showError(_ error: ProductListViewModel.AppError) {
+        emptyLabel.text = error.errorDescription
+        
+        if error.canRetry {
+            let alert = UIAlertController(
+                title: "Hata",
+                message: error.errorDescription,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Tekrar Dene", style: .default) { [weak self] _ in
+                self?.viewModel.retryFetch()
+            })
+            
+            alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+            
+            present(alert, animated: true)
+        }
     }
 }
+
+
 
 // MARK: - CollectionView DataSource & Delegate
 
@@ -263,6 +284,36 @@ extension ProductListViewController: UICollectionViewDataSource, UICollectionVie
         if offsetY > contentHeight - frameHeight - 100 {
             viewModel.fetchNextPage()
         }
+    }
+}
+
+// MARK: - UISearchBarDelegate
+extension ProductListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // Cancel previous timer
+        searchDebounceTimer?.invalidate()
+        
+        // Start new timer with debounce interval
+        searchDebounceTimer = Timer.scheduledTimer(withTimeInterval: searchDebounceInterval, repeats: false) { [weak self] _ in
+            self?.performSearch(with: searchText)
+        }
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchDebounceTimer?.invalidate()
+        performSearch(with: searchBar.text ?? "")
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
+        searchDebounceTimer?.invalidate()
+        performSearch(with: "")
+    }
+    
+    private func performSearch(with searchText: String) {
+        viewModel.setSearchText(searchText)
     }
 }
 

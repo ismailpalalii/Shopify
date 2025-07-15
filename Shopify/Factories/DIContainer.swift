@@ -9,41 +9,61 @@
 import Foundation
 import Factory
 
-final class DIContainer {
-    static let shared = DIContainer()
-    private init() {
-        registerDependencies()
-    }
+protocol DependencyContainerProtocol {
+    func networkManager() -> NetworkManagerProtocol
+    func coreDataService() -> CoreDataServiceProtocol
+    func productService() -> ProductServiceProtocol
+    func notificationManager() -> NotificationManagerProtocol
+}
 
-    private func registerDependencies() {
-        Container.shared.networkManager.register {
-            NetworkManagerImpl()
-        }
-        Container.shared.coreDataService.register {
-            CoreDataServiceImpl()
-        }
-        Container.shared.productService.register {
-            ProductServiceImpl(networkManager: Container.shared.networkManager())
-        }
-        
-        Container.shared.notificationManager.register {
-           NotificationManagerImpl()
-        }
+final class DIContainer: DependencyContainerProtocol {
+    static let shared = DIContainer()
+    
+    private let _networkManager: NetworkManagerProtocol
+    private let _coreDataService: CoreDataServiceProtocol
+    private let _productService: ProductServiceProtocol
+    private let _notificationManager: NotificationManagerProtocol
+    
+    init(
+        networkManager: NetworkManagerProtocol? = nil,
+        coreDataService: CoreDataServiceProtocol? = nil,
+        notificationManager: NotificationManagerProtocol? = nil
+    ) {
+        self._networkManager = networkManager ?? NetworkManagerImpl()
+        self._coreDataService = coreDataService ?? CoreDataServiceImpl()
+        self._notificationManager = notificationManager ?? NotificationManagerImpl()
+        self._productService = ProductServiceImpl(networkManager: self._networkManager)
+    }
+    
+    func networkManager() -> NetworkManagerProtocol {
+        return _networkManager
+    }
+    
+    func coreDataService() -> CoreDataServiceProtocol {
+        return _coreDataService
+    }
+    
+    func productService() -> ProductServiceProtocol {
+        return _productService
+    }
+    
+    func notificationManager() -> NotificationManagerProtocol {
+        return _notificationManager
     }
 }
 
-// Dependency keys
+// Legacy Factory support - will be removed gradually
 extension Container {
     var networkManager: Factory<NetworkManagerProtocol> {
-        Factory(self) { fatalError("Dependency not registered!") }
+        Factory(self) { DIContainer.shared.networkManager() }
     }
     var coreDataService: Factory<CoreDataServiceProtocol> {
-        Factory(self) { fatalError("Dependency not registered!") }
+        Factory(self) { DIContainer.shared.coreDataService() }
     }
     var productService: Factory<ProductServiceProtocol> {
-        Factory(self) { fatalError("Dependency not registered!") }
+        Factory(self) { DIContainer.shared.productService() }
     }
     var notificationManager: Factory<NotificationManagerProtocol> {
-        Factory(self) { fatalError("Dependency not registered!") }
+        Factory(self) { DIContainer.shared.notificationManager() }
     }
 }

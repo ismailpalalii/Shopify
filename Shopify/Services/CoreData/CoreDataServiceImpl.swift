@@ -20,9 +20,22 @@ enum CoreDataServiceError: Error {
 
 final class CoreDataServiceImpl: CoreDataServiceProtocol {
     private let context: NSManagedObjectContext
+    private let backgroundContext: NSManagedObjectContext
 
-    init(context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext) {
-        self.context = context
+    init(context: NSManagedObjectContext? = nil) {
+        if let providedContext = context {
+            self.context = providedContext
+        } else {
+            // Safely get AppDelegate
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                fatalError("Could not get AppDelegate")
+            }
+            self.context = appDelegate.persistentContainer.viewContext
+        }
+        
+        // Create background context for heavy operations
+        self.backgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        self.backgroundContext.parent = self.context
     }
 
     func saveCartItem(_ product: Product, quantity: Int16 = 1, completion: @escaping (Result<Void, Error>) -> Void) {
@@ -41,11 +54,9 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
                         return
                     }
                     let cartItem = NSManagedObject(entity: entity, insertInto: self.context)
-                    cartItem.setValue(product.id, forKey: "id")
-                    cartItem.setValue(product.name, forKey: "name")
-                    cartItem.setValue(product.price, forKey: "price")
-                    cartItem.setValue(product.image, forKey: "image")
-                    cartItem.setValue(quantity, forKey: "quantity")
+                    var productWithQuantity = product
+                    productWithQuantity.quantity = quantity
+                    cartItem.updateWithProduct(productWithQuantity)
                 }
                 try self.context.save()
                 completion(.success(()))
@@ -74,33 +85,18 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
         }
 
         func loadCartItems(completion: @escaping (Result<[Product], Error>) -> Void) {
-            context.perform {
+            backgroundContext.perform {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "CartItem")
                 do {
-                    let items = try self.context.fetch(fetchRequest)
-                    let products = items.compactMap { obj -> Product? in
-                        guard
-                            let id = obj.value(forKey: "id") as? String,
-                            let name = obj.value(forKey: "name") as? String,
-                            let price = obj.value(forKey: "price") as? String,
-                            let image = obj.value(forKey: "image") as? String,
-                            let quantity = obj.value(forKey: "quantity") as? Int16
-                        else { return nil }
-                        return Product(
-                            id: id,
-                            createdAt: "",
-                            name: name,
-                            image: image,
-                            price: price,
-                            description: "",
-                            model: "",
-                            brand: "",
-                            quantity: quantity
-                        )
+                    let items = try self.backgroundContext.fetch(fetchRequest)
+                    let products = items.compactMap { $0.toProduct() }
+                    DispatchQueue.main.async {
+                        completion(.success(products))
                     }
-                    completion(.success(products))
                 } catch {
-                    completion(.failure(CoreDataServiceError.fetchFailed(error)))
+                    DispatchQueue.main.async {
+                        completion(.failure(CoreDataServiceError.fetchFailed(error)))
+                    }
                 }
             }
         }
@@ -177,15 +173,53 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
     }
 
     func loadFavoriteProductIDs(completion: @escaping (Result<[String], Error>) -> Void) {
-        context.perform {
+        backgroundContext.perform {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "FavoriteProduct")
             do {
-                let items = try self.context.fetch(fetchRequest)
+                let items = try self.backgroundContext.fetch(fetchRequest)
                 let ids = items.compactMap { $0.value(forKey: "id") as? String }
-                completion(.success(ids))
+                DispatchQueue.main.async {
+                    completion(.success(ids))
+                }
             } catch {
-                completion(.failure(CoreDataServiceError.fetchFailed(error)))
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataServiceError.fetchFailed(error)))
+                }
             }
         }
+    }
+}
+
+// MARK: - NSManagedObject Extensions
+extension NSManagedObject {
+    func toProduct() -> Product? {
+        guard
+            let id = value(forKey: "id") as? String,
+            let name = value(forKey: "name") as? String,
+            let price = value(forKey: "price") as? String,
+            let image = value(forKey: "image") as? String
+        else { return nil }
+        
+        let quantity = value(forKey: "quantity") as? Int16 ?? 0
+        
+        return Product(
+            id: id,
+            createdAt: "",
+            name: name,
+            image: image,
+            price: price,
+            description: "",
+            model: "",
+            brand: "",
+            quantity: quantity
+        )
+    }
+    
+    func updateWithProduct(_ product: Product) {
+        setValue(product.id, forKey: "id")
+        setValue(product.name, forKey: "name")
+        setValue(product.price, forKey: "price")
+        setValue(product.image, forKey: "image")
+        setValue(product.quantity, forKey: "quantity")
     }
 }
