@@ -71,15 +71,14 @@ final class ProductDetailViewModel {
         }
     }
 
-    func addToCart() {
-        coreDataService.saveCartItem(product) { [weak self] result in
+    func addToCart(_ product: Product, quantity: Int16 = 1) {
+        coreDataService.saveCartItem(product, quantity: quantity) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
                 self.notificationManager.post(name: .cartUpdated, object: nil)
-                self.onCartAdded?()
             case .failure(let error):
-                self.onError?(error)
+                print("Cart add error: \(error)")
             }
         }
     }

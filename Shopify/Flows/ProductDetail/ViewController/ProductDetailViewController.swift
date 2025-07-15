@@ -268,7 +268,7 @@ final class ProductDetailViewController: UIViewController {
     }
     
     @objc private func addToCartTapped() {
-        viewModel.addToCart()
+        viewModel.addToCart(viewModel.product)
     }
     
     @objc private func backButtonTapped() {

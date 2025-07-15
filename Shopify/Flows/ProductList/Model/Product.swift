@@ -17,4 +17,5 @@ struct Product: Decodable {
     let description: String
     let model: String
     let brand: String
+    var quantity: Int16?
 }

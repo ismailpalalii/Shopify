@@ -118,8 +118,8 @@ final class ProductListViewModel {
         onStateChange?(state)
     }
 
-    func addToCart(_ product: Product) {
-        coreDataService.saveCartItem(product) { [weak self] result in
+    func addToCart(_ product: Product, quantity: Int16 = 1) {
+        coreDataService.saveCartItem(product, quantity: quantity) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success:
