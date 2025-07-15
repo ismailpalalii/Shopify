@@ -40,17 +40,44 @@ final class CartViewModel {
             guard let self = self else { return }
             switch result {
             case .success(let products):
-                var mergedProducts: [String: Product] = [:]
-                for product in products {
-                    if let existing = mergedProducts[product.id] {
-                        var updatedProduct = existing
-                        updatedProduct.quantity! += product.quantity ?? 0
-                        mergedProducts[product.id] = updatedProduct
-                    } else {
-                        mergedProducts[product.id] = product
+                // Preserve order by keeping existing items and updating quantities
+                var newCartItems: [Product] = []
+                var processedIds: Set<String> = []
+                
+                // First, update existing items in their current positions
+                for existingItem in self.cartItems {
+                    if let foundProduct = products.first(where: { $0.id == existingItem.id }) {
+                        // Calculate total quantity for this product
+                        let totalQuantity = products.filter { $0.id == existingItem.id }
+                            .reduce(0) { $0 + ($1.quantity ?? 0) }
+                        
+                        var updatedItem = existingItem
+                        updatedItem.quantity = totalQuantity
+                        
+                        if totalQuantity > 0 {
+                            newCartItems.append(updatedItem)
+                        }
+                        processedIds.insert(existingItem.id)
                     }
                 }
-                self.cartItems = Array(mergedProducts.values)
+                
+                // Then, add new items that weren't in the cart before
+                for product in products {
+                    if !processedIds.contains(product.id) {
+                        // Calculate total quantity for this new product
+                        let totalQuantity = products.filter { $0.id == product.id }
+                            .reduce(0) { $0 + ($1.quantity ?? 0) }
+                        
+                        if totalQuantity > 0 {
+                            var newProduct = product
+                            newProduct.quantity = totalQuantity
+                            newCartItems.append(newProduct)
+                            processedIds.insert(product.id)
+                        }
+                    }
+                }
+                
+                self.cartItems = newCartItems
                 self.calculateTotalPrice()
             case .failure(let error):
                 self.onError?(error)
@@ -83,9 +110,7 @@ final class CartViewModel {
             guard let self = self else { return }
             switch result {
             case .success:
-                self.cartItems[index] = item
-                self.calculateTotalPrice()
-                self.onCartItemsChanged?(self.cartItems)
+                self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
                 self.onError?(error)
             }
@@ -97,9 +122,7 @@ final class CartViewModel {
             guard let self = self else { return }
             switch result {
             case .success:
-                self.cartItems.removeAll(where: { $0.id == product.id })
-                self.calculateTotalPrice()
-                self.onCartItemsChanged?(self.cartItems)
+                self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
                 self.onError?(error)
             }
@@ -111,9 +134,7 @@ final class CartViewModel {
             guard let self = self else { return }
             switch result {
             case .success:
-                self.cartItems.removeAll()
-                self.calculateTotalPrice()
-                self.onCartItemsChanged?(self.cartItems)
+                self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
                 self.onError?(error)
             }

@@ -147,7 +147,23 @@ extension CartViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let product = viewModel.cartItems[indexPath.row]
-            viewModel.removeItem(product)
+            showDeleteConfirmation(for: product)
         }
+    }
+    
+    private func showDeleteConfirmation(for product: Product) {
+        let alert = UIAlertController(
+            title: "Ürünü Sil",
+            message: "'\(product.name)' ürününü sepetten silmek istediğinize emin misiniz?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        
+        alert.addAction(UIAlertAction(title: "Sil", style: .destructive) { [weak self] _ in
+            self?.viewModel.removeItem(product)
+        })
+        
+        present(alert, animated: true)
     }
 }

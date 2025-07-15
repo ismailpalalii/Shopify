@@ -126,15 +126,17 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
     
     func clearCart(completion: @escaping (Result<Void, Error>) -> Void) {
         context.perform {
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "CartItem")
-            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "CartItem")
+            
             do {
-                try self.context.execute(batchDeleteRequest)
+                let cartItems = try self.context.fetch(fetchRequest)
+                for item in cartItems {
+                    self.context.delete(item)
+                }
                 try self.context.save()
                 completion(.success(()))
             } catch {
-                completion(.failure(error))
+                completion(.failure(CoreDataServiceError.deleteFailed(error)))
             }
         }
     }
