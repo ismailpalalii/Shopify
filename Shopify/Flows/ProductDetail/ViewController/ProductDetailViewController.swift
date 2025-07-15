@@ -29,6 +29,8 @@ final class ProductDetailViewController: UIViewController {
     }()
     
     private let titleLabel = UILabel()
+    private let brandLabel = UILabel()
+    private let modelLabel = UILabel()
     private let descriptionLabel = UILabel()
     
     private let priceTitleLabel = UILabel()
@@ -97,6 +99,8 @@ final class ProductDetailViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         favoriteImageView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        brandLabel.translatesAutoresizingMaskIntoConstraints = false
+        modelLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         priceTitleLabel.translatesAutoresizingMaskIntoConstraints = false
         priceLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -110,6 +114,8 @@ final class ProductDetailViewController: UIViewController {
         contentView.addSubview(imageView)
         contentView.addSubview(favoriteImageView)
         contentView.addSubview(titleLabel)
+        contentView.addSubview(brandLabel)
+        contentView.addSubview(modelLabel)
         contentView.addSubview(descriptionLabel)
         contentView.addSubview(bottomStackView)
         
@@ -124,6 +130,14 @@ final class ProductDetailViewController: UIViewController {
         titleLabel.font = .boldSystemFont(ofSize: 24)
         titleLabel.numberOfLines = 2
         titleLabel.textColor = .black
+        
+        brandLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        brandLabel.textColor = .systemGray
+        brandLabel.numberOfLines = 1
+        
+        modelLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        modelLabel.textColor = .systemGray2
+        modelLabel.numberOfLines = 1
         
         descriptionLabel.font = .systemFont(ofSize: 16)
         descriptionLabel.numberOfLines = 0
@@ -210,8 +224,18 @@ final class ProductDetailViewController: UIViewController {
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            // Description label below title
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            // Brand label below title
+            brandLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            brandLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            brandLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
+            // Model label below brand
+            modelLabel.topAnchor.constraint(equalTo: brandLabel.bottomAnchor, constant: 6),
+            modelLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            modelLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
+            // Description label below model
+            descriptionLabel.topAnchor.constraint(equalTo: modelLabel.bottomAnchor, constant: 16),
             descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
@@ -250,6 +274,10 @@ final class ProductDetailViewController: UIViewController {
     
     private func updateUI() {
         titleLabel.text = viewModel.product.name
+        
+        // Display brand and model from product data
+        brandLabel.text = viewModel.product.brand.isEmpty ? "Brand: -" : "Brand: \(viewModel.product.brand)"
+        modelLabel.text = viewModel.product.model.isEmpty ? "Model: -" : "Model: \(viewModel.product.model)"
         descriptionLabel.text = viewModel.product.description
         priceLabel.text = "\(viewModel.product.price) ₺"
         

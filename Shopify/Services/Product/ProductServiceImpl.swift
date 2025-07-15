@@ -34,4 +34,20 @@ final class ProductServiceImpl: ProductServiceProtocol {
             completion: completion
         )
     }
+    
+    func fetchAllProducts(
+        completion: @escaping (Result<[Product], Error>) -> Void
+    ) {
+        let parameters: Parameters = [
+            "page": 1,
+            "limit": 100  // Large limit to get all products
+        ]
+        networkManager.request(
+            url: baseURL,
+            method: .get,
+            parameters: parameters,
+            headers: nil,
+            completion: completion
+        )
+    }
 }

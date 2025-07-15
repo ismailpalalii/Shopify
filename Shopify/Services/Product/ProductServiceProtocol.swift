@@ -14,4 +14,8 @@ protocol ProductServiceProtocol {
         limit: Int,
         completion: @escaping (Result<[Product], Error>) -> Void
     )
+    
+    func fetchAllProducts(
+        completion: @escaping (Result<[Product], Error>) -> Void
+    )
 }

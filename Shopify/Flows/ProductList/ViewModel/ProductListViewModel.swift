@@ -61,9 +61,17 @@ final class ProductListViewModel {
 
     private(set) var favoriteProductIDs: Set<String> = []
     private var searchText: String = ""
+    private var filterData: FilterData = FilterData()
+    
+    // For filter data - cache all products to extract brands/models
+    private var allProductsCache: [Product] = []
+    private var isAllProductsCached = false
 
     var onStateChange: ((State) -> Void)?
     var isFirstPage: Bool { currentPage == 1 }
+    var isFilteringActive: Bool { 
+        return !filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty || !searchText.isEmpty
+    }
 
     init(
         productService: ProductServiceProtocol,
@@ -99,6 +107,11 @@ final class ProductListViewModel {
         filteredProducts = []
         currentPage = 1
         isLastPage = false
+        
+        // Clear all products cache when refreshing to start fresh
+        allProductsCache = []
+        isAllProductsCached = false
+        
         fetchProducts(isInitial: true)
     }
 
@@ -122,7 +135,7 @@ final class ProductListViewModel {
                     self.state = self.products.isEmpty ? .empty : .loaded
                 } else {
                     self.products.append(contentsOf: newProducts)
-                    self.filterProducts(with: self.searchText)
+                    self.filterAndSortProducts()
                 }
             case .failure(let error):
                 self.state = .error(self.mapError(error))
@@ -152,18 +165,132 @@ final class ProductListViewModel {
 
     func setSearchText(_ text: String) {
         searchText = text
-        filterProducts(with: text)
+        
+        // If search is not empty and we don't have all products cached, fetch them first
+        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isAllProductsCached {
+            fetchAllProductsForFilter { [weak self] in
+                self?.filterAndSortProducts()
+            }
+        } else {
+            filterAndSortProducts()
+        }
+    }
+    
+    func clearAllFilters() {
+        filterData = FilterData()
+        searchText = ""
+        
+        // Clear all products cache when clearing filters to return to pagination mode
+        allProductsCache = []
+        isAllProductsCached = false
+        
+        filterAndSortProducts()
+    }
+    
+    func applyFilter(_ filter: FilterData) {
+        filterData = filter
+        filterAndSortProducts()
+    }
+    
+    func getCurrentFilterData() -> FilterData {
+        var currentFilterData = filterData
+        
+        // Use cached all products if available, otherwise use current products
+        let productsToUse = isAllProductsCached ? allProductsCache : products
+        
+        // Extract unique brands and models from all products
+        let uniqueBrands = Array(Set(productsToUse.map { $0.brand })).filter { !$0.isEmpty }.sorted()
+        let uniqueModels = Array(Set(productsToUse.map { $0.model })).filter { !$0.isEmpty }.sorted()
+        
+        currentFilterData.availableBrands = uniqueBrands
+        currentFilterData.availableModels = uniqueModels
+        
+        return currentFilterData
+    }
+    
+    func fetchAllProductsForFilter(completion: @escaping () -> Void) {
+        // If already cached, return immediately
+        if isAllProductsCached {
+            completion()
+            return
+        }
+        
+        // Fetch all products for filter/search purposes
+        productService.fetchAllProducts { [weak self] result in
+            switch result {
+            case .success(let allProducts):
+                self?.allProductsCache = allProducts
+                self?.isAllProductsCached = true
+                completion()
+            case .failure:
+                // If fails, use current products
+                self?.isAllProductsCached = false
+                completion()
+            }
+        }
     }
 
-    private func filterProducts(with text: String) {
-        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            filteredProducts = products
-        } else {
-            let lower = text.lowercased()
-            filteredProducts = products.filter { $0.name.lowercased().contains(lower) }
+    private func filterAndSortProducts() {
+        // Use all products if cached and any filter/search is active, otherwise use pagination products
+        let productsToFilter = (isAllProductsCached && (isFilteringActive || !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)) ? allProductsCache : products
+        var filtered = productsToFilter
+        
+        // Apply search filter
+        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let lower = searchText.lowercased()
+            filtered = filtered.filter { $0.name.lowercased().contains(lower) }
         }
+        
+        // Apply brand filter
+        if !filterData.selectedBrands.isEmpty {
+            filtered = filtered.filter { product in
+                return filterData.selectedBrands.contains(product.brand)
+            }
+        }
+        
+        // Apply model filter
+        if !filterData.selectedModels.isEmpty {
+            filtered = filtered.filter { product in
+                return filterData.selectedModels.contains(product.model)
+            }
+        }
+        
+        // Apply sorting
+        switch filterData.sortOption {
+        case .oldToNew:
+            filtered = filtered.sorted { $0.createdAt < $1.createdAt }
+        case .newToOld:
+            filtered = filtered.sorted { $0.createdAt > $1.createdAt }
+        case .priceHighToLow:
+            filtered = filtered.sorted { 
+                let price1 = extractPrice(from: $0.price)
+                let price2 = extractPrice(from: $1.price)
+                return price1 > price2
+            }
+        case .priceLowToHigh:
+            filtered = filtered.sorted { 
+                let price1 = extractPrice(from: $0.price)
+                let price2 = extractPrice(from: $1.price)
+                return price1 < price2
+            }
+        }
+        
+        filteredProducts = filtered
         state = filteredProducts.isEmpty ? .empty : .loaded
         onStateChange?(state)
+    }
+    
+    private func extractPrice(from priceString: String) -> Double {
+        // Remove common currency symbols and separators
+        let cleanedString = priceString
+            .replacingOccurrences(of: "₺", with: "")
+            .replacingOccurrences(of: "TL", with: "")
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: ",", with: ".")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        return Double(cleanedString) ?? 0
     }
 
     func addToCart(_ product: Product, quantity: Int16 = 1) {

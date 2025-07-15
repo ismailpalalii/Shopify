@@ -84,8 +84,10 @@ final class ProductListViewController: UIViewController {
         setupCollectionView()
         setupViewModel()
         searchBar.delegate = self
+        filterButton.addTarget(self, action: #selector(filterButtonTapped), for: .touchUpInside)
         viewModel.fetchFirstPage()
         setupDismissKeyboardGesture()
+        updateFilterButtonTitle()
     }
 
     private func setupSubviews() {
@@ -278,6 +280,12 @@ extension ProductListViewController: UICollectionViewDataSource, UICollectionVie
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard !viewModel.isFetching, !viewModel.isLastPage else { return }
+        
+        // Don't trigger pagination if filtering is active
+        if viewModel.isFilteringActive {
+            return
+        }
+        
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let frameHeight = scrollView.frame.size.height
@@ -309,11 +317,74 @@ extension ProductListViewController: UISearchBarDelegate {
         searchBar.text = ""
         searchBar.resignFirstResponder()
         searchDebounceTimer?.invalidate()
-        performSearch(with: "")
+        
+        // Clear all filters when clearing search
+        viewModel.clearAllFilters()
+        updateFilterButtonTitle()
     }
     
     private func performSearch(with searchText: String) {
+        // Show loading indicator if search is not empty
+        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            loadingView.startAnimating()
+            loadingView.isHidden = false
+        }
+        
         viewModel.setSearchText(searchText)
+        updateFilterButtonTitle()
+        
+        // Hide loading indicator after a short delay
+        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.loadingView.stopAnimating()
+                self?.loadingView.isHidden = true
+            }
+        }
+    }
+    
+    @objc private func filterButtonTapped() {
+        // If filtering is active, clear all filters
+        if viewModel.isFilteringActive {
+            viewModel.clearAllFilters()
+            searchBar.text = ""
+            updateFilterButtonTitle()
+            return
+        }
+        
+        // Show loading indicator
+        loadingView.startAnimating()
+        loadingView.isHidden = false
+        
+        // Fetch all products for filter first
+        viewModel.fetchAllProductsForFilter { [weak self] in
+            DispatchQueue.main.async {
+                self?.loadingView.stopAnimating()
+                self?.loadingView.isHidden = true
+                
+                let filterVC = FilterViewController(filterData: self?.viewModel.getCurrentFilterData() ?? FilterData())
+                filterVC.delegate = self
+                filterVC.modalPresentationStyle = .fullScreen
+                self?.present(filterVC, animated: true)
+            }
+        }
+    }
+}
+
+// MARK: - FilterViewControllerDelegate
+extension ProductListViewController: FilterViewControllerDelegate {
+    func filterViewController(_ controller: FilterViewController, didApplyFilter filterData: FilterData) {
+        viewModel.applyFilter(filterData)
+        updateFilterButtonTitle()
+    }
+    
+    private func updateFilterButtonTitle() {
+        if viewModel.isFilteringActive {
+            filterButton.setTitle("Clear Filters", for: .normal)
+            filterButton.backgroundColor = UIColor(red: 255/255, green: 59/255, blue: 48/255, alpha: 1) // Red color
+        } else {
+            filterButton.setTitle("Select Filter", for: .normal)
+            filterButton.backgroundColor = UIColor(white: 0.95, alpha: 1) // Original gray
+        }
     }
 }
 
