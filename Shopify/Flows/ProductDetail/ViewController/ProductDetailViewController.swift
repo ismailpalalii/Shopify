@@ -165,6 +165,17 @@ final class ProductDetailViewController: UIViewController {
         addToCartButton.setTitleColor(.white, for: .normal)
         addToCartButton.layer.cornerRadius = 10
         addToCartButton.titleLabel?.font = .boldSystemFont(ofSize: 20)
+        
+        // Add visual feedback for button states
+        addToCartButton.setTitleColor(.white.withAlphaComponent(0.7), for: .highlighted)
+        addToCartButton.setBackgroundImage(UIImage(), for: .highlighted)
+        
+        // Add shadow for better visual feedback
+        addToCartButton.layer.shadowColor = UIColor.black.withAlphaComponent(0.2).cgColor
+        addToCartButton.layer.shadowOffset = CGSize(width: 0, height: 2)
+        addToCartButton.layer.shadowOpacity = 0.3
+        addToCartButton.layer.shadowRadius = 4
+        
         addToCartButton.addTarget(self, action: #selector(addToCartTapped), for: .touchUpInside)
         
         bottomStackView.axis = .horizontal
@@ -316,10 +327,32 @@ final class ProductDetailViewController: UIViewController {
     }
     
     @objc private func favoriteTapped() {
+        // Add visual feedback
+        UIView.animate(withDuration: 0.1, animations: {
+            self.favoriteImageView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            self.favoriteImageView.alpha = 0.7
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.favoriteImageView.transform = .identity
+                self.favoriteImageView.alpha = 1.0
+            }
+        }
+        
         viewModel.toggleFavorite()
     }
     
     @objc private func addToCartTapped() {
+        // Add visual feedback
+        UIView.animate(withDuration: 0.1, animations: {
+            self.addToCartButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            self.addToCartButton.alpha = 0.8
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.addToCartButton.transform = .identity
+                self.addToCartButton.alpha = 1.0
+            }
+        }
+        
         viewModel.addToCart(viewModel.product)
         // Analytics is already logged in ViewModel
     }

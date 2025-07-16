@@ -68,6 +68,18 @@ final class ProductCell: UICollectionViewCell {
         btn.layer.cornerRadius = 10
         btn.titleLabel?.font = .boldSystemFont(ofSize: 17)
         btn.contentEdgeInsets = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        
+        // Add visual feedback for button states
+        btn.setTitleColor(.white.withAlphaComponent(0.7), for: .highlighted)
+        btn.setBackgroundImage(UIImage(), for: .highlighted)
+        btn.backgroundColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        
+        // Add shadow for better visual feedback
+        btn.layer.shadowColor = UIColor.black.withAlphaComponent(0.2).cgColor
+        btn.layer.shadowOffset = CGSize(width: 0, height: 2)
+        btn.layer.shadowOpacity = 0.3
+        btn.layer.shadowRadius = 4
+        
         return btn
     }()
 
@@ -192,9 +204,32 @@ final class ProductCell: UICollectionViewCell {
     }
 
     @objc private func addTapped() {
+        // Add visual feedback
+        UIView.animate(withDuration: 0.1, animations: {
+            self.addButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+            self.addButton.alpha = 0.8
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.addButton.transform = .identity
+                self.addButton.alpha = 1.0
+            }
+        }
+        
+        // Call handler
         addToCartHandler?()
     }
     @objc private func favoriteTapped() {
+        // Add visual feedback
+        UIView.animate(withDuration: 0.1, animations: {
+            self.starImageView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            self.starImageView.alpha = 0.7
+        }) { _ in
+            UIView.animate(withDuration: 0.1) {
+                self.starImageView.transform = .identity
+                self.starImageView.alpha = 1.0
+            }
+        }
+        
         onFavoriteToggle?()
     }
 }
