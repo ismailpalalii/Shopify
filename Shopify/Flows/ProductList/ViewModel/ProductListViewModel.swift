@@ -82,6 +82,7 @@ final class ProductListViewModel {
 
     var onStateChange: ((State) -> Void)?
     var onError: ((Error) -> Void)?
+    var onFavoritesUpdated: (() -> Void)?
     var isFirstPage: Bool { currentPage == 1 }
     var isFilteringActive: Bool { 
         return !filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty || !searchText.isEmpty
@@ -104,6 +105,11 @@ final class ProductListViewModel {
             case .failure:
                 self?.favoriteProductIDs = []
             }
+        }
+        
+        // Observe favorites updates
+        notificationManager.observe(name: .favoritesUpdated) { [weak self] _ in
+            self?.refreshFavoriteProductIDs()
         }
     }
 
@@ -353,6 +359,21 @@ final class ProductListViewModel {
     func isFavorite(_ product: Product) -> Bool {
         favoriteProductIDs.contains(product.id)
     }
+    
+    private func refreshFavoriteProductIDs() {
+        coreDataService.loadFavoriteProductIDs { [weak self] result in
+            switch result {
+            case .success(let ids):
+                self?.favoriteProductIDs = Set(ids)
+                // Notify UI to update
+                DispatchQueue.main.async {
+                    self?.onFavoritesUpdated?()
+                }
+            case .failure:
+                self?.favoriteProductIDs = []
+            }
+        }
+    }
 
     func toggleFavorite(_ product: Product, completion: (() -> Void)? = nil) {
         if isFavorite(product) {
@@ -362,6 +383,8 @@ final class ProductListViewModel {
                     self.favoriteProductIDs.remove(product.id)
                     // Log analytics
                     AnalyticsManager.shared.logProductFavorited(product: product, isFavorite: false)
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                     completion?()
                 }
             }
@@ -372,6 +395,8 @@ final class ProductListViewModel {
                     self.favoriteProductIDs.insert(product.id)
                     // Log analytics
                     AnalyticsManager.shared.logProductFavorited(product: product, isFavorite: true)
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                     completion?()
                 }
             }

@@ -55,6 +55,8 @@ final class ProductDetailViewModel {
                 guard let self = self else { return }
                 if case .success = result {
                     self.isFavorite = false
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                 } else if case .failure(let error) = result {
                     self.onError?(error)
                 }
@@ -64,6 +66,8 @@ final class ProductDetailViewModel {
                 guard let self = self else { return }
                 if case .success = result {
                     self.isFavorite = true
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                 } else if case .failure(let error) = result {
                     self.onError?(error)
                 }
