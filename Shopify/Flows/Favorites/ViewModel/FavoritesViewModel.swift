@@ -106,12 +106,10 @@ final class FavoritesViewModel {
         self.coreDataService = coreDataService
         self.notificationManager = notificationManager
 
-        // Load favorite product IDs
         loadFavoriteProductIDs()
         
-        // Observe cart updates
         notificationManager.observe(name: .cartUpdated) { [weak self] _ in
-            // Refresh if needed
+            
         }
     }
 
@@ -121,7 +119,6 @@ final class FavoritesViewModel {
         state = .loading
         onStateChange?(state)
         
-        // Load favorite product IDs first
         coreDataService.loadFavoriteProductIDs { [weak self] result in
             guard let self = self else { return }
             
@@ -137,13 +134,11 @@ final class FavoritesViewModel {
                     return
                 }
                 
-                // Fetch all products to get favorite ones
                 self.productService.fetchAllProducts { [weak self] result in
                     guard let self = self else { return }
                     
                     switch result {
                     case .success(let allProducts):
-                        // Filter only favorite products
                         self.favoriteProducts = allProducts.filter { self.favoriteProductIDs.contains($0.id) }
                         self.filterAndSortProducts()
                         

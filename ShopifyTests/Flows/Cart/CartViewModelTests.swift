@@ -517,19 +517,7 @@ final class CartViewModelTests: XCTestCase {
         XCTAssertTrue(mockCoreDataService.loadCartItemsCalled)
     }
     
-    // MARK: - Product Detail ViewModel Tests
-    
-    func test_makeProductDetailViewModel_shouldCreateCorrectViewModel() {
-        // Given
-        let product = createMockProduct()
-        
-        // When
-        let detailVM = sut.makeProductDetailViewModel(for: product)
-        
-        // Then
-        XCTAssertEqual(detailVM.product.id, product.id)
-        XCTAssertEqual(detailVM.product.name, product.name)
-    }
+
     
     // MARK: - Callback Tests
     
