@@ -49,14 +49,12 @@ final class CartViewModel {
             guard let self = self else { return }
             switch result {
             case .success(let products):
-                // Preserve order by keeping existing items and updating quantities
+                
                 var newCartItems: [Product] = []
                 var processedIds: Set<String> = []
                 
-                // First, update existing items in their current positions
                 for existingItem in self.cartItems {
-                    if let foundProduct = products.first(where: { $0.id == existingItem.id }) {
-                        // Calculate total quantity for this product
+                    if products.first(where: { $0.id == existingItem.id }) != nil {
                         let totalQuantity = products.filter { $0.id == existingItem.id }
                             .reduce(0) { $0 + ($1.quantity ?? 0) }
                         
@@ -70,10 +68,8 @@ final class CartViewModel {
                     }
                 }
                 
-                // Then, add new items that weren't in the cart before
                 for product in products {
                     if !processedIds.contains(product.id) {
-                        // Calculate total quantity for this new product
                         let totalQuantity = products.filter { $0.id == product.id }
                             .reduce(0) { $0 + ($1.quantity ?? 0) }
                         
@@ -159,7 +155,6 @@ final class CartViewModel {
     }
     
     private func extractPrice(from priceString: String) -> Double {
-        // Remove common currency symbols and separators
         let cleanedString = priceString
             .replacingOccurrences(of: "₺", with: "")
             .replacingOccurrences(of: "TL", with: "")

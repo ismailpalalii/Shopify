@@ -49,7 +49,6 @@
 		0C1BA7022E27C2A200A52638 /* Exceptions for "Shopify" folder in "ShopifyTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Flows/ProductDetail/Coordinator/ProductDetailCoordinator.swift,
 				"Resources/GoogleService-Info.plist",
 			);
 			target = 0C1BA4852E2679B700A52638 /* ShopifyTests */;
@@ -57,7 +56,6 @@
 		0C1BA7032E27C2A200A52638 /* Exceptions for "Shopify" folder in "ShopifyUITests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Flows/ProductDetail/Coordinator/ProductDetailCoordinator.swift,
 				"Resources/GoogleService-Info.plist",
 			);
 			target = 0C1BA48F2E2679B700A52638 /* ShopifyUITests */;
