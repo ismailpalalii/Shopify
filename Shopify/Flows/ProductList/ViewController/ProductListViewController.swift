@@ -55,6 +55,13 @@ final class ProductListViewController: UIViewController {
         label.isHidden = true
         return label
     }()
+    
+    private lazy var refreshControl: UIRefreshControl = {
+        let refresh = UIRefreshControl()
+        refresh.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        refresh.tintColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        return refresh
+    }()
 
     init(viewModel: ProductListViewModel) {
         self.viewModel = viewModel
@@ -148,6 +155,7 @@ final class ProductListViewController: UIViewController {
         collectionView.backgroundColor = .white
         collectionView.register(ProductCell.self, forCellWithReuseIdentifier: "ProductCell")
         collectionView.register(LoadingFooterCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "LoadingFooterCell")
+        collectionView.refreshControl = refreshControl
     }
 
     private func setupViewModel() {
@@ -195,6 +203,20 @@ final class ProductListViewController: UIViewController {
     }
     @objc private func endEditing() {
         view.endEditing(true)
+    }
+    
+    @objc private func refreshData() {
+        // Clear all filters and search when refreshing
+        viewModel.clearAllFilters()
+        searchBar.text = ""
+        updateFilterButtonTitle()
+        
+        // Reset to first page and fetch fresh data
+        viewModel.refreshData { [weak self] in
+            DispatchQueue.main.async {
+                self?.refreshControl.endRefreshing()
+            }
+        }
     }
     
     private func showError(_ error: ProductListViewModel.AppError) {

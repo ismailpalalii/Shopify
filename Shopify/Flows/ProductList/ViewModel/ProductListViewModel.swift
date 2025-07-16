@@ -114,6 +114,20 @@ final class ProductListViewModel {
         
         fetchProducts(isInitial: true)
     }
+    
+    func refreshData(completion: @escaping () -> Void) {
+        products = []
+        filteredProducts = []
+        currentPage = 1
+        isLastPage = false
+        
+        // Clear all products cache when refreshing to start fresh
+        allProductsCache = []
+        isAllProductsCached = false
+        
+        fetchProducts(isInitial: true)
+        completion()
+    }
 
     func fetchNextPage() {
         guard !isFetching, !isLastPage else { return }

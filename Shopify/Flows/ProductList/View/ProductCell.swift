@@ -152,7 +152,17 @@ final class ProductCell: UICollectionViewCell {
         productImageView.image = nil
 
         if let url = URL(string: product.image) {
-            productImageView.kf.setImage(with: url, placeholder: nil, options: [.transition(.fade(0.2))]) { [weak self] _ in
+            productImageView.kf.setImage(
+                with: url,
+                placeholder: nil,
+                options: [
+                    .transition(.fade(0.2)),
+                    .cacheOriginalImage,
+                    .processor(DownsamplingImageProcessor(size: CGSize(width: 300, height: 240))),
+                    .scaleFactor(UIScreen.main.scale),
+                    .cacheMemoryOnly
+                ]
+            ) { [weak self] _ in
                 self?.loadingView.stopAnimating()
             }
         } else {

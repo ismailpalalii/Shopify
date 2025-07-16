@@ -40,6 +40,13 @@ final class FavoritesViewController: UIViewController {
         label.isHidden = true
         return label
     }()
+    
+    private lazy var refreshControl: UIRefreshControl = {
+        let refresh = UIRefreshControl()
+        refresh.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        refresh.tintColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        return refresh
+    }()
 
     init(viewModel: FavoritesViewModel) {
         self.viewModel = viewModel
@@ -124,6 +131,7 @@ final class FavoritesViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.backgroundColor = .white
         collectionView.register(ProductCell.self, forCellWithReuseIdentifier: "ProductCell")
+        collectionView.refreshControl = refreshControl
     }
 
     private func setupViewModel() {
@@ -171,6 +179,13 @@ final class FavoritesViewController: UIViewController {
     }
     @objc private func endEditing() {
         view.endEditing(true)
+    }
+    
+    @objc private func refreshData() {
+        viewModel.loadFavorites()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
     }
     
     private func showError(_ error: FavoritesViewModel.AppError) {

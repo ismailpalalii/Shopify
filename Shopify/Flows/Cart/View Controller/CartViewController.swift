@@ -28,6 +28,13 @@ final class CartViewController: UIViewController {
     private let totalPriceLabel = UILabel()
     private let completeButton = UIButton(type: .system)
     private let emptyLabel = UILabel()
+    
+    private lazy var refreshControl: UIRefreshControl = {
+        let refresh = UIRefreshControl()
+        refresh.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        refresh.tintColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        return refresh
+    }()
 
     init(viewModel: CartViewModel) {
         self.viewModel = viewModel
@@ -60,6 +67,7 @@ final class CartViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.tableFooterView = UIView()
+        tableView.refreshControl = refreshControl
 
         totalPriceLabel.font = .boldSystemFont(ofSize: 22)
         totalPriceLabel.textColor = UIColor(red: 0/255, green: 82/255, blue: 204/255, alpha: 1)
@@ -135,6 +143,13 @@ final class CartViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
+    
+    @objc private func refreshData() {
+        viewModel.loadCartItems()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
+    }
 }
 
 extension CartViewController: UITableViewDataSource, UITableViewDelegate {
@@ -183,6 +198,22 @@ extension CartViewController: UITableViewDataSource, UITableViewDelegate {
             let product = viewModel.cartItems[indexPath.row]
             showDeleteConfirmation(for: product)
         }
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (action, view, completion) in
+            let product = self?.viewModel.cartItems[indexPath.row]
+            if let product = product {
+                self?.viewModel.removeItem(product)
+            }
+            completion(true)
+        }
+        deleteAction.backgroundColor = .systemRed
+        deleteAction.image = UIImage(systemName: "trash")
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = false
+        return configuration
     }
     
     private func showDeleteConfirmation(for product: Product) {
