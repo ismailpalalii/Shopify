@@ -25,13 +25,13 @@ final class ProductListViewModel {
         var errorDescription: String? {
             switch self {
             case .networkUnavailable:
-                return "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin."
+                return "No internet connection. Please check your connection."
             case .serverError:
-                return "Sunucu hatası. Lütfen daha sonra tekrar deneyin."
+                return "Server error. Please try again later."
             case .invalidData:
-                return "Geçersiz veri. Lütfen uygulamayı yeniden başlatın."
+                return "Invalid data. Please restart the app."
             case .unknown(let error):
-                return "Beklenmeyen hata: \(error.localizedDescription)"
+                return "Unexpected error: \(error.localizedDescription)"
             }
         }
         
@@ -138,7 +138,7 @@ final class ProductListViewModel {
     private func fetchProducts(isInitial: Bool) {
         if isInitial { state = .loading }
         isFetching = true
-        onStateChange?(state) // state zaten güncel, spinner için tetikleyelim
+        onStateChange?(state) // state is already current, trigger for spinner
         productService.fetchProducts(page: currentPage, limit: pageLimit) { [weak self] result in
             guard let self = self else { return }
             self.isFetching = false

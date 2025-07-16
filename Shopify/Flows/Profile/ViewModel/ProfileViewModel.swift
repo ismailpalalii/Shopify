@@ -21,7 +21,7 @@ final class ProfileViewModel {
     
     // Mock user data - in a real app this would come from a user service
     private(set) var userProfile = UserProfile(
-        name: "İsmail Palalı",
+        name: "Ismail Palali",
         email: "ismail@example.com",
         phone: "+90 555 123 4567",
         avatarURL: nil,

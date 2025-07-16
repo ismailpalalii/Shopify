@@ -27,7 +27,7 @@ final class CartViewController: UIViewController {
     private let tableView = UITableView()
     private let totalPriceLabel = UILabel()
     private let completeButton = UIButton(type: .system)
-    private let emptyLabel = UILabel()
+    private let emptyStateView = EmptyStateView(type: .noCartItems)
     
     private lazy var refreshControl: UIRefreshControl = {
         let refresh = UIRefreshControl()
@@ -56,7 +56,7 @@ final class CartViewController: UIViewController {
     private func setupViews() {
         navigationController?.setNavigationBarHidden(true, animated: false)
 
-        [blueHeader, tableView, totalPriceLabel, completeButton, emptyLabel].forEach {
+        [blueHeader, tableView, totalPriceLabel, completeButton, emptyStateView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -83,12 +83,8 @@ final class CartViewController: UIViewController {
 
         completeButton.addTarget(self, action: #selector(completeTapped), for: .touchUpInside)
 
-        emptyLabel.text = "Sepetiniz boş"
-        emptyLabel.textAlignment = .center
-        emptyLabel.textColor = .gray
-        emptyLabel.font = .systemFont(ofSize: 18)
-        emptyLabel.isHidden = true
-        view.addSubview(emptyLabel)
+        emptyStateView.isHidden = true
+        view.addSubview(emptyStateView)
     }
 
     private func setupConstraints() {
@@ -114,15 +110,17 @@ final class CartViewController: UIViewController {
             completeButton.heightAnchor.constraint(equalToConstant: 44),
             completeButton.widthAnchor.constraint(equalToConstant: 150),
 
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            emptyStateView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
 
     private func setupBindings() {
         viewModel.onCartItemsChanged = { [weak self] items in
             self?.tableView.reloadData()
-            self?.emptyLabel.isHidden = !items.isEmpty
+            self?.emptyStateView.isHidden = !items.isEmpty
         }
         viewModel.onTotalPriceChanged = { [weak self] total in
             self?.totalPriceLabel.text = "Total: \(String(format: "%.2f", total)) ₺"
@@ -218,14 +216,14 @@ extension CartViewController: UITableViewDataSource, UITableViewDelegate {
     
     private func showDeleteConfirmation(for product: Product) {
         let alert = UIAlertController(
-            title: "Ürünü Sil",
-            message: "'\(product.name)' ürününü sepetten silmek istediğinize emin misiniz?",
+            title: "Delete Product",
+            message: "Are you sure you want to remove '\(product.name)' from your cart?",
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
-        alert.addAction(UIAlertAction(title: "Sil", style: .destructive) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             self?.viewModel.removeItem(product)
         })
         

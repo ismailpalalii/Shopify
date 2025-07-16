@@ -27,12 +27,13 @@ final class DIContainer: DependencyContainerProtocol {
     init(
         networkManager: NetworkManagerProtocol? = nil,
         coreDataService: CoreDataServiceProtocol? = nil,
-        notificationManager: NotificationManagerProtocol? = nil
+        notificationManager: NotificationManagerProtocol? = nil,
+        productService: ProductServiceProtocol? =  nil
     ) {
         self._networkManager = networkManager ?? NetworkManagerImpl()
         self._coreDataService = coreDataService ?? CoreDataServiceImpl()
         self._notificationManager = notificationManager ?? NotificationManagerImpl()
-        self._productService = ProductServiceImpl(networkManager: self._networkManager)
+        self._productService = productService ?? ProductServiceImpl(networkManager: self._networkManager)
     }
     
     func networkManager() -> NetworkManagerProtocol {
