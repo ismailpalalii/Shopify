@@ -8,7 +8,7 @@
 import Foundation
 
 final class ProductListViewModel {
-    enum State {
+    enum State: Equatable {
         case idle
         case loading
         case loaded
@@ -16,7 +16,7 @@ final class ProductListViewModel {
         case error(AppError)
     }
     
-    enum AppError: LocalizedError {
+    enum AppError: LocalizedError, Equatable {
         case networkUnavailable
         case serverError
         case invalidData
@@ -25,13 +25,13 @@ final class ProductListViewModel {
         var errorDescription: String? {
             switch self {
             case .networkUnavailable:
-                return "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin."
+                return "No internet connection. Please check your connection."
             case .serverError:
-                return "Sunucu hatası. Lütfen daha sonra tekrar deneyin."
+                return "Server error. Please try again later."
             case .invalidData:
-                return "Geçersiz veri. Lütfen uygulamayı yeniden başlatın."
+                return "Invalid data. Please restart the app."
             case .unknown(let error):
-                return "Beklenmeyen hata: \(error.localizedDescription)"
+                return "Unexpected error: \(error.localizedDescription)"
             }
         }
         
@@ -40,6 +40,19 @@ final class ProductListViewModel {
             case .networkUnavailable, .serverError:
                 return true
             case .invalidData, .unknown:
+                return false
+            }
+        }
+        
+        static func == (lhs: AppError, rhs: AppError) -> Bool {
+            switch (lhs, rhs) {
+            case (.networkUnavailable, .networkUnavailable),
+                 (.serverError, .serverError),
+                 (.invalidData, .invalidData):
+                return true
+            case (.unknown(let lhsError), .unknown(let rhsError)):
+                return lhsError.localizedDescription == rhsError.localizedDescription
+            default:
                 return false
             }
         }
@@ -68,6 +81,7 @@ final class ProductListViewModel {
     private var isAllProductsCached = false
 
     var onStateChange: ((State) -> Void)?
+    var onError: ((Error) -> Void)?
     var isFirstPage: Bool { currentPage == 1 }
     var isFilteringActive: Bool { 
         return !filterData.selectedBrands.isEmpty || !filterData.selectedModels.isEmpty || !searchText.isEmpty
@@ -114,9 +128,25 @@ final class ProductListViewModel {
         
         fetchProducts(isInitial: true)
     }
+    
+    func refreshData(completion: @escaping () -> Void) {
+        products = []
+        filteredProducts = []
+        currentPage = 1
+        isLastPage = false
+        
+        // Clear all products cache when refreshing to start fresh
+        allProductsCache = []
+        isAllProductsCached = false
+        
+        fetchProducts(isInitial: true)
+        completion()
+    }
 
     func fetchNextPage() {
-        guard !isFetching, !isLastPage else { return }
+        guard !isFetching, !isLastPage else { 
+            return 
+        }
         currentPage += 1
         fetchProducts(isInitial: false)
     }
@@ -124,7 +154,10 @@ final class ProductListViewModel {
     private func fetchProducts(isInitial: Bool) {
         if isInitial { state = .loading }
         isFetching = true
-        onStateChange?(state) // state zaten güncel, spinner için tetikleyelim
+        onStateChange?(state) // state is already current, trigger for spinner
+        
+
+        
         productService.fetchProducts(page: currentPage, limit: pageLimit) { [weak self] result in
             guard let self = self else { return }
             self.isFetching = false
@@ -300,7 +333,9 @@ final class ProductListViewModel {
             case .success:
                 self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
-                print("Cart add error: \(error)")
+                DispatchQueue.main.async {
+                    self.onError?(error)
+                }
             }
         }
     }

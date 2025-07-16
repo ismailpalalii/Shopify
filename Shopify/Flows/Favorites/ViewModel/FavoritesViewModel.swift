@@ -42,13 +42,13 @@ final class FavoritesViewModel {
         var errorDescription: String? {
             switch self {
             case .networkUnavailable:
-                return "İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin."
+                return "No internet connection. Please check your connection."
             case .serverError:
-                return "Sunucu hatası. Lütfen daha sonra tekrar deneyin."
+                return "Server error. Please try again later."
             case .invalidData:
-                return "Geçersiz veri. Lütfen uygulamayı yeniden başlatın."
+                return "Invalid data. Please restart the app."
             case .unknown(let error):
-                return "Beklenmeyen hata: \(error.localizedDescription)"
+                return "Unexpected error: \(error.localizedDescription)"
             }
         }
         
@@ -89,8 +89,13 @@ final class FavoritesViewModel {
 
     private(set) var favoriteProductIDs: Set<String> = []
     private var searchText: String = ""
+    
+    var currentSearchText: String {
+        return searchText
+    }
 
     var onStateChange: ((State) -> Void)?
+    var onError: ((Error) -> Void)?
 
     init(
         productService: ProductServiceProtocol,
@@ -224,7 +229,9 @@ final class FavoritesViewModel {
             case .success:
                 self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
-                print("Cart add error: \(error)")
+                DispatchQueue.main.async {
+                    self.onError?(error)
+                }
             }
         }
     }

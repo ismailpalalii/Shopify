@@ -111,7 +111,7 @@ final class CoreDataServiceImpl: CoreDataServiceProtocol {
                         try self.context.save()
                         completion(.success(()))
                     } else {
-                        // ürün yok, normal durum
+                        // no product, normal case
                         completion(.success(()))
                     }
                 } catch {

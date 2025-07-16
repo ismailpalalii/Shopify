@@ -78,7 +78,9 @@ final class ProductDetailViewModel {
             case .success:
                 self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
-                print("Cart add error: \(error)")
+                DispatchQueue.main.async {
+                    self.onError?(error)
+                }
             }
         }
     }

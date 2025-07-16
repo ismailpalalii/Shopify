@@ -152,10 +152,21 @@ final class CartViewModel {
     
     private func calculateTotalPrice() {
         totalPrice = cartItems.reduce(0.0) { total, product in
-            let price = Double(product.price) ?? 0
+            let price = extractPrice(from: product.price)
             let quantity = Double(product.quantity ?? 1)
             return total + (price * quantity)
         }
+    }
+    
+    private func extractPrice(from priceString: String) -> Double {
+        // Remove common currency symbols and separators
+        let cleanedString = priceString
+            .replacingOccurrences(of: "₺", with: "")
+            .replacingOccurrences(of: "TL", with: "")
+            .replacingOccurrences(of: " ", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        return Double(cleanedString) ?? 0
     }
     
     func makeProductDetailViewModel(for product: Product) -> ProductDetailViewModel {

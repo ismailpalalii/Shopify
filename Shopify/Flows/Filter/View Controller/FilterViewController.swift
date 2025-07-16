@@ -172,7 +172,7 @@ final class FilterViewController: UIViewController {
         modelScrollView.addSubview(modelStackView)
         
         // Primary Button
-        primaryButton.setTitle("Primary", for: .normal)
+        primaryButton.setTitle("Filter", for: .normal)
         primaryButton.backgroundColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
         primaryButton.setTitleColor(.white, for: .normal)
         primaryButton.layer.cornerRadius = 12

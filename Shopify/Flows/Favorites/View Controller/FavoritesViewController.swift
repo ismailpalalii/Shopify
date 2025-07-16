@@ -33,12 +33,13 @@ final class FavoritesViewController: UIViewController {
     }()
     private let collectionView: UICollectionView
     private let loadingView = UIActivityIndicatorView(style: .large)
-    private let emptyLabel: UILabel = {
-        let label = UILabel()
-        label.text = "No favorite products found"
-        label.textAlignment = .center
-        label.isHidden = true
-        return label
+    private let emptyStateView = EmptyStateView(type: .noFavorites)
+    
+    private lazy var refreshControl: UIRefreshControl = {
+        let refresh = UIRefreshControl()
+        refresh.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        refresh.tintColor = UIColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 1)
+        return refresh
     }()
 
     init(viewModel: FavoritesViewModel) {
@@ -82,13 +83,14 @@ final class FavoritesViewController: UIViewController {
     }
 
     private func setupSubviews() {
-        [blueHeader, searchBar, collectionView, loadingView, emptyLabel].forEach {
+        [blueHeader, searchBar, collectionView, loadingView, emptyStateView].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
         blueHeader.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         loadingView.hidesWhenStopped = true
+        emptyStateView.isHidden = true
     }
 
     private func setupConstraints() {
@@ -114,8 +116,10 @@ final class FavoritesViewController: UIViewController {
             loadingView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            emptyStateView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
 
@@ -124,12 +128,22 @@ final class FavoritesViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.backgroundColor = .white
         collectionView.register(ProductCell.self, forCellWithReuseIdentifier: "ProductCell")
+        collectionView.refreshControl = refreshControl
     }
 
     private func setupViewModel() {
         viewModel.onStateChange = { [weak self] state in
             DispatchQueue.main.async {
                 self?.reload(for: state)
+            }
+        }
+        
+        viewModel.onError = { [weak self] error in
+            DispatchQueue.main.async {
+                ErrorHandler.shared.showToastError(
+                    "Failed to add item to cart. Please try again.",
+                    from: self ?? UIViewController()
+                )
             }
         }
     }
@@ -145,19 +159,26 @@ final class FavoritesViewController: UIViewController {
         
         switch state {
         case .idle:
-            emptyLabel.isHidden = true
+            emptyStateView.isHidden = true
         case .loading:
-            emptyLabel.isHidden = true
+            emptyStateView.isHidden = true
         case .loaded:
-            emptyLabel.isHidden = true
+            emptyStateView.isHidden = true
             collectionView.reloadData()
             collectionView.collectionViewLayout.invalidateLayout()
         case .empty:
-            emptyLabel.isHidden = false
+            // Check if we're searching to show appropriate empty state
+            if !viewModel.currentSearchText.isEmpty {
+                emptyStateView.updateType(.noSearchResults)
+            } else {
+                emptyStateView.updateType(.noFavorites)
+            }
+            emptyStateView.isHidden = false
             collectionView.reloadData()
             collectionView.collectionViewLayout.invalidateLayout()
         case .error(let error):
-            emptyLabel.isHidden = false
+            emptyStateView.updateType(.custom(title: "Error", message: error.errorDescription ?? "", icon: "exclamationmark.triangle"))
+            emptyStateView.isHidden = false
             showError(error)
             collectionView.reloadData()
             collectionView.collectionViewLayout.invalidateLayout()
@@ -173,21 +194,28 @@ final class FavoritesViewController: UIViewController {
         view.endEditing(true)
     }
     
+    @objc private func refreshData() {
+        viewModel.loadFavorites()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.refreshControl.endRefreshing()
+        }
+    }
+    
     private func showError(_ error: FavoritesViewModel.AppError) {
-        emptyLabel.text = error.errorDescription
+        emptyStateView.updateType(.custom(title: "Error", message: error.errorDescription ?? "", icon: "exclamationmark.triangle"))
         
         if error.canRetry {
             let alert = UIAlertController(
-                title: "Hata",
+                title: "Error",
                 message: error.errorDescription,
                 preferredStyle: .alert
             )
             
-            alert.addAction(UIAlertAction(title: "Tekrar Dene", style: .default) { [weak self] _ in
+            alert.addAction(UIAlertAction(title: "Try Again", style: .default) { [weak self] _ in
                 self?.viewModel.retryFetch()
             })
             
-            alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
             
             present(alert, animated: true)
         }
