@@ -26,7 +26,6 @@ final class TabBarCoordinator {
         childCoordinators.append(cartCoordinator)
         cartNav.tabBarItem = UITabBarItem(title: "Cart", image: UIImage(systemName: "cart"), tag: 1)
         
-        
         // Favorites
         let favNav = UINavigationController()
         let favoritesCoordinator = FavoritesCoordinator(navigationController: favNav)

@@ -10,12 +10,12 @@ import Factory
 
 final class FavoritesCoordinator: Coordinator {
     let navigationController: UINavigationController
+    private var productDetailCoordinator: ProductDetailCoordinator?
 
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
     }
 
-    
     func start() {
         let productService = Container.shared.productService()
         let coreDataService = Container.shared.coreDataService()
@@ -27,6 +27,14 @@ final class FavoritesCoordinator: Coordinator {
             notificationManager: notificationManager
         )
         let favoritesViewController = FavoritesViewController(viewModel: favoritesViewModel)
+        favoritesViewController.coordinator = self
         navigationController.setViewControllers([favoritesViewController], animated: false)
+    }
+    
+    // MARK: - Navigation Methods
+    func showProductDetail(for product: Product) {
+        let productDetailCoordinator = ProductDetailCoordinator(navigationController: navigationController)
+        self.productDetailCoordinator = productDetailCoordinator
+        productDetailCoordinator.showProductDetail(for: product)
     }
 } 

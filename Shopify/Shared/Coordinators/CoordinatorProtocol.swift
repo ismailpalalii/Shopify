@@ -11,4 +11,11 @@ import UIKit
 protocol Coordinator: AnyObject {
     var navigationController: UINavigationController { get }
     func start()
+    func finish()
+}
+
+extension Coordinator {
+    func finish() {
+        // Default implementation - child coordinators can override
+    }
 }

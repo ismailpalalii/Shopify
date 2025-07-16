@@ -9,6 +9,7 @@ import UIKit
 
 final class FavoritesViewController: UIViewController {
     private let viewModel: FavoritesViewModel
+    weak var coordinator: FavoritesCoordinator?
     private var searchDebounceTimer: Timer?
     private let searchDebounceInterval: TimeInterval = 0.5
 
@@ -231,9 +232,7 @@ extension FavoritesViewController: UICollectionViewDelegate {
     }
 
     private func navigateToProductDetail(with product: Product) {
-        let detailVM = viewModel.makeProductDetailViewModel(for: product)
-        let detailVC = ProductDetailViewController(viewModel: detailVM)
-        navigationController?.pushViewController(detailVC, animated: true)
+        coordinator?.showProductDetail(for: product)
     }
 }
 

@@ -11,6 +11,7 @@ import Factory
 
 final class ProductListCoordinator: Coordinator {
     let navigationController: UINavigationController
+    private var productDetailCoordinator: ProductDetailCoordinator?
 
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
@@ -28,6 +29,14 @@ final class ProductListCoordinator: Coordinator {
         )
 
         let productListVC = ProductListViewController(viewModel: viewModel)
+        productListVC.coordinator = self
         navigationController.setViewControllers([productListVC], animated: false)
+    }
+    
+    // MARK: - Navigation Methods
+    func showProductDetail(for product: Product) {
+        let productDetailCoordinator = ProductDetailCoordinator(navigationController: navigationController)
+        self.productDetailCoordinator = productDetailCoordinator
+        productDetailCoordinator.showProductDetail(for: product)
     }
 }
