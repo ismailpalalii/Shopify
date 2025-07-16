@@ -243,6 +243,8 @@ final class FavoritesViewModel {
                     self.favoriteProducts.removeAll { $0.id == product.id }
                     self.filteredProducts.removeAll { $0.id == product.id }
                     self.filterAndSortProducts()
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                     completion?()
                 }
             }
@@ -251,6 +253,8 @@ final class FavoritesViewModel {
                 guard let self = self else { return }
                 if case .success = result {
                     self.favoriteProductIDs.insert(product.id)
+                    // Notify other views about favorite change
+                    self.notificationManager.post(name: .favoritesUpdated, object: nil)
                     completion?()
                 }
             }

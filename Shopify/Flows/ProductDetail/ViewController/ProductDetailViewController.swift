@@ -286,7 +286,18 @@ final class ProductDetailViewController: UIViewController {
         priceLabel.text = "\(viewModel.product.price) ₺"
         
         if let url = URL(string: viewModel.product.image) {
-            imageView.kf.setImage(with: url)
+            // Cancel any previous image loading task
+            imageView.kf.cancelDownloadTask()
+            
+            imageView.kf.setImage(
+                with: url,
+                options: [
+                    .transition(.fade(0.3)),
+                    .processor(DownsamplingImageProcessor(size: CGSize(width: 600, height: 400))),
+                    .scaleFactor(UIScreen.main.scale),
+                    .cacheMemoryOnly
+                ]
+            )
         } else {
             imageView.image = UIImage(systemName: "photo")
         }

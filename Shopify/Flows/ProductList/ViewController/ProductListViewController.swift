@@ -178,10 +178,15 @@ final class ProductListViewController: UIViewController {
                 )
             }
         }
+        
+        viewModel.onFavoritesUpdated = { [weak self] in
+            DispatchQueue.main.async {
+                self?.collectionView.reloadData()
+            }
+        }
     }
 
     private func reload(for state: ProductListViewModel.State) {
-        // İlk sayfa yüklemede ortada büyük loading spinner
         if viewModel.isFirstPage && viewModel.isFetching {
             loadingView.startAnimating()
             loadingView.isHidden = false

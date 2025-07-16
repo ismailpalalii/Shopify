@@ -88,6 +88,14 @@ final class ProductCell: UICollectionViewCell {
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Cancel any ongoing image loading task
+        productImageView.kf.cancelDownloadTask()
+        productImageView.image = nil
+        loadingView.stopAnimating()
+    }
 
     private func setup() {
         [productImageView, loadingView, starImageView, priceLabel, nameLabel, brandLabel, modelLabel, addButton].forEach {
@@ -152,18 +160,22 @@ final class ProductCell: UICollectionViewCell {
         productImageView.image = nil
 
         if let url = URL(string: product.image) {
+            // Cancel any previous image loading task
+            productImageView.kf.cancelDownloadTask()
+            
             productImageView.kf.setImage(
                 with: url,
                 placeholder: nil,
                 options: [
                     .transition(.fade(0.2)),
-                    .cacheOriginalImage,
                     .processor(DownsamplingImageProcessor(size: CGSize(width: 300, height: 240))),
                     .scaleFactor(UIScreen.main.scale),
                     .cacheMemoryOnly
                 ]
-            ) { [weak self] _ in
-                self?.loadingView.stopAnimating()
+            ) { [weak self] result in
+                DispatchQueue.main.async {
+                    self?.loadingView.stopAnimating()
+                }
             }
         } else {
             loadingView.stopAnimating()
