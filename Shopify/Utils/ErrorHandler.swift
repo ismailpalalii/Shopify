@@ -66,6 +66,9 @@ final class ErrorHandler {
         from viewController: UIViewController,
         retryAction: (() -> Void)? = nil
     ) {
+        // Log error to Analytics and Crashlytics
+        AnalyticsManager.shared.logError(error, context: "ErrorHandler")
+        
         let errorType = mapErrorToType(error)
         showErrorAlert(
             type: errorType,

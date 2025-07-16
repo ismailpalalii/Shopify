@@ -52,6 +52,9 @@ final class CartViewController: UIViewController {
         setupConstraints()
         setupBindings()
         viewModel.loadCartItems()
+        
+        // Log screen view
+        AnalyticsManager.shared.logScreenView(screenName: "Cart")
     }
 
     private func setupViews() {
@@ -138,6 +141,12 @@ final class CartViewController: UIViewController {
     }
 
     @objc private func completeTapped() {
+        // Log purchase analytics
+        AnalyticsManager.shared.logPurchaseCompleted(
+            totalAmount: viewModel.totalPrice,
+            itemCount: viewModel.cartItems.count
+        )
+        
         let alert = UIAlertController(title: "Complete", message: "Purchase completed successfully.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)

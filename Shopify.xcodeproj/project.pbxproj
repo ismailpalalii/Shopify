@@ -10,6 +10,9 @@
 		0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA4AD2E267BE700A52638 /* Factory */; };
 		0C1BA50A2E267DEA00A52638 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA5092E267DEA00A52638 /* Alamofire */; };
 		0C1BA5AE2E268F9300A52638 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA5AD2E268F9300A52638 /* Kingfisher */; };
+		0C1BA7A92E27C8D600A52638 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA7A82E27C8D600A52638 /* FirebaseAnalytics */; };
+		0C1BA7AB2E27C8D600A52638 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA7AA2E27C8D600A52638 /* FirebaseCore */; };
+		0C1BA7AD2E27C8D600A52638 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0C1BA7AC2E27C8D600A52638 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +50,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Flows/ProductDetail/Coordinator/ProductDetailCoordinator.swift,
+				"Resources/GoogleService-Info.plist",
 			);
 			target = 0C1BA4852E2679B700A52638 /* ShopifyTests */;
 		};
@@ -54,6 +58,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Flows/ProductDetail/Coordinator/ProductDetailCoordinator.swift,
+				"Resources/GoogleService-Info.plist",
 			);
 			target = 0C1BA48F2E2679B700A52638 /* ShopifyUITests */;
 		};
@@ -88,7 +93,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C1BA5AE2E268F9300A52638 /* Kingfisher in Frameworks */,
+				0C1BA7AB2E27C8D600A52638 /* FirebaseCore in Frameworks */,
 				0C1BA4AE2E267BE700A52638 /* Factory in Frameworks */,
+				0C1BA7AD2E27C8D600A52638 /* FirebaseCrashlytics in Frameworks */,
+				0C1BA7A92E27C8D600A52638 /* FirebaseAnalytics in Frameworks */,
 				0C1BA50A2E267DEA00A52638 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -153,6 +161,9 @@
 				0C1BA4AD2E267BE700A52638 /* Factory */,
 				0C1BA5092E267DEA00A52638 /* Alamofire */,
 				0C1BA5AD2E268F9300A52638 /* Kingfisher */,
+				0C1BA7A82E27C8D600A52638 /* FirebaseAnalytics */,
+				0C1BA7AA2E27C8D600A52638 /* FirebaseCore */,
+				0C1BA7AC2E27C8D600A52638 /* FirebaseCrashlytics */,
 			);
 			productName = Shopify;
 			productReference = 0C1BA46D2E2679B500A52638 /* Shopify.app */;
@@ -240,6 +251,7 @@
 				0C1BA4AC2E267BE700A52638 /* XCRemoteSwiftPackageReference "Factory" */,
 				0C1BA5082E267DEA00A52638 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				0C1BA5AC2E268F9300A52638 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				0C1BA7A72E27C8D600A52638 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0C1BA46E2E2679B500A52638 /* Products */;
@@ -638,6 +650,14 @@
 				minimumVersion = 8.5.0;
 			};
 		};
+		0C1BA7A72E27C8D600A52638 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -655,6 +675,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0C1BA5AC2E268F9300A52638 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
+		};
+		0C1BA7A82E27C8D600A52638 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1BA7A72E27C8D600A52638 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		0C1BA7AA2E27C8D600A52638 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1BA7A72E27C8D600A52638 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		0C1BA7AC2E27C8D600A52638 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0C1BA7A72E27C8D600A52638 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
