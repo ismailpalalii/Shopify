@@ -46,9 +46,9 @@ A modern iOS e-commerce app built with UIKit, MVVM architecture, and Core Data â
 ## ðŸ“± How to Run
 
 1. **Clone the repo**
-   ```bash
-   git clone <your-repo-url>
-   cd Shopify
+
+   ```sh
+   git clone https://github.com/ismailpalalii/Shopify.git
    ```
 
 2. **Install dependencies**
