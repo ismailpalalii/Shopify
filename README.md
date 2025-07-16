@@ -36,6 +36,13 @@ A modern iOS e-commerce app built with UIKit, MVVM architecture, and Core Data �
 - **Protocol-oriented** service architecture
 - **Error handling** with custom error types
 
+### Architecture Principles
+- **MVVM + Coordinator**: Clean separation between UI, business logic, and navigation
+- **Protocol-oriented Design**: All services implement protocols for testability
+- **Dependency Injection**: Factory-based DI container for service management
+- **Background Context**: Core Data operations optimized with background context
+- **Error Handling**: Structured error management with user-friendly messages
+
 ## 📱 How to Run
 
 1. **Clone the repo**
@@ -62,9 +69,19 @@ A modern iOS e-commerce app built with UIKit, MVVM architecture, and Core Data �
    - Build and run the project
    - Test all flows: Product List → Product Detail → Cart → Favorites → Profile
 
+## Video
+
+https://github.com/user-attachments/assets/30776b27-6f80-415f-8ffb-0f3598f0939f
+
 ## 🖼️ Screenshots
 
-*[Add screenshots of your app here]*
+<img src="https://github.com/user-attachments/assets/e95b69ff-c709-440b-8fda-f2a31995a5c7" width="100">
+<img src="https://github.com/user-attachments/assets/246674cb-1875-499d-a226-100946e9a0b8" width="100">
+<img src="https://github.com/user-attachments/assets/264d79e1-05a5-42c3-b9f5-6f42bc9c3837" width="100">
+<img src="https://github.com/user-attachments/assets/a2696d3a-18f9-485e-9ff8-9714318e36b5" width="100">
+<img src="https://github.com/user-attachments/assets/685883fa-5308-46f9-bdd5-c62342ced350" width="100">
+<img src="https://github.com/user-attachments/assets/dbe3dad4-430f-4c59-900e-6d4e380088a7" width="100">
+<img src="https://github.com/user-attachments/assets/af476abe-69d8-4b8d-9ca3-fddbed6b4370" width="100">
 
 ## 👨‍💼 Development Approach
 
@@ -78,26 +95,7 @@ Every requirement is split into atomic tasks with clear Task IDs (e.g., Task-101
 - **PR Process**: After task completion, a pull request is opened and merged into development branch
 - **Code Review**: Each PR undergoes review before merge
 - **Continuous Integration**: Automated testing on each PR
-
-### Architecture Principles
-- **MVVM + Coordinator**: Clean separation between UI, business logic, and navigation
-- **Protocol-oriented Design**: All services implement protocols for testability
-- **Dependency Injection**: Factory-based DI container for service management
-- **Background Context**: Core Data operations optimized with background context
-- **Error Handling**: Structured error management with user-friendly messages
-
-### Code Quality Standards
-- **Unit Test Coverage**: Comprehensive tests for view models, services, and data layers
-- **Documentation**: Thorough code comments and README documentation
-- **Consistent Naming**: Follow iOS naming conventions and best practices
-- **Modular Design**: Each feature is self-contained with clear interfaces
-
-### Testing Strategy
-- **View Model Tests**: Test business logic and data binding
-- **Service Tests**: Mock network calls and Core Data operations
-- **Integration Tests**: Test coordinator navigation and data flow
-- **UI Tests**: Automated UI testing for critical user flows
-
+  
 ## 📋 Task Completion Table
 
 | Task ID | Task Name | Status | PR Status | Description |
@@ -188,15 +186,6 @@ Shopify/
 - **Service Tests**: Network and data layer testing
 - **Mock Classes**: Comprehensive mocking for isolated testing
 - **Async Testing**: Proper handling of asynchronous operations
-
-### Test Coverage
-- Product browsing and search functionality
-- Cart management and persistence
-- Favorites system
-- Core Data operations
-- Network layer error handling (Alamofire)
-- Image loading and caching (Kingfisher)
-- Coordinator navigation flows
 
 ## 📝 Notes
 
