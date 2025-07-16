@@ -71,6 +71,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
     var updateCartItemQuantityCalled = false
     var removeCartItemCalled = false
     var clearCartCalled = false
+    var loadCartItemsCalled = false
     var mockFavoriteIDs: [String] = []
     var mockCartProducts: [Product] = []
     
@@ -88,10 +89,13 @@ class MockCoreDataService: CoreDataServiceProtocol {
     }
     
     func loadCartItems(completion: @escaping (Result<[Product], Error>) -> Void) {
-        if shouldSucceed {
-            completion(.success(mockCartProducts))
-        } else {
-            completion(.failure(mockError ?? CoreDataServiceError.fetchFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+        loadCartItemsCalled = true
+        DispatchQueue.main.async {
+            if self.shouldSucceed {
+                completion(.success(self.mockCartProducts))
+            } else {
+                completion(.failure(self.mockError ?? CoreDataServiceError.fetchFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+            }
         }
     }
     
@@ -134,10 +138,12 @@ class MockCoreDataService: CoreDataServiceProtocol {
     func updateCartItem(_ product: Product, quantity: Int16, completion: @escaping (Result<Void, Error>) -> Void) {
         updateCartItemQuantityCalled = true
         
-        if shouldSucceed {
-            completion(.success(()))
-        } else {
-            completion(.failure(mockError ?? CoreDataServiceError.updateFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+        DispatchQueue.main.async {
+            if self.shouldSucceed {
+                completion(.success(()))
+            } else {
+                completion(.failure(self.mockError ?? CoreDataServiceError.updateFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+            }
         }
     }
     
@@ -145,20 +151,24 @@ class MockCoreDataService: CoreDataServiceProtocol {
         removeCartItemCalled = true
         removedCartProduct = product
         
-        if shouldSucceed {
-            completion(.success(()))
-        } else {
-            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+        DispatchQueue.main.async {
+            if self.shouldSucceed {
+                completion(.success(()))
+            } else {
+                completion(.failure(self.mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+            }
         }
     }
     
     func clearCart(completion: @escaping (Result<Void, Error>) -> Void) {
         clearCartCalled = true
         
-        if shouldSucceed {
-            completion(.success(()))
-        } else {
-            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+        DispatchQueue.main.async {
+            if self.shouldSucceed {
+                completion(.success(()))
+            } else {
+                completion(.failure(self.mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
+            }
         }
     }
     
@@ -175,6 +185,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
         updateCartItemQuantityCalled = false
         removeCartItemCalled = false
         clearCartCalled = false
+        loadCartItemsCalled = false
         mockFavoriteIDs = []
         mockCartProducts = []
     }
@@ -189,15 +200,24 @@ class MockNotificationManager: NotificationManagerProtocol {
     var observedNotificationName: Notification.Name?
     var removeObserverCalled = false
     var removedObserver: Any?
+    private var observers: [(Notification.Name, (Notification) -> Void)] = []
     
     func post(name: Notification.Name, object: Any?) {
         postCalled = true
         postedNotificationName = name
+        
+        // Call all observers for this notification
+        for (observerName, block) in observers {
+            if observerName == name {
+                block(Notification(name: name, object: object))
+            }
+        }
     }
     
     func observe(name: Notification.Name, using block: @escaping (Notification) -> Void) -> NSObjectProtocol {
         observeCalled = true
         observedNotificationName = name
+        observers.append((name, block))
         return NSObject()
     }
     
@@ -213,6 +233,7 @@ class MockNotificationManager: NotificationManagerProtocol {
         observedNotificationName = nil
         removeObserverCalled = false
         removedObserver = nil
+        observers.removeAll()
     }
 }
 
