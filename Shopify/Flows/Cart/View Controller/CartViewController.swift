@@ -10,6 +10,7 @@ import UIKit
 
 final class CartViewController: UIViewController {
     private let viewModel: CartViewModel
+    weak var coordinator: CartCoordinator?
 
     private let blueHeader: UIView = {
         let v = UIView()
@@ -182,9 +183,7 @@ extension CartViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     private func navigateToProductDetail(with product: Product) {
-        let detailVM = viewModel.makeProductDetailViewModel(for: product)
-        let detailVC = ProductDetailViewController(viewModel: detailVM)
-        navigationController?.pushViewController(detailVC, animated: true)
+        coordinator?.showProductDetail(for: product)
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {

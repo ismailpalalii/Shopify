@@ -169,12 +169,5 @@ final class CartViewModel {
         return Double(cleanedString) ?? 0
     }
     
-    func makeProductDetailViewModel(for product: Product) -> ProductDetailViewModel {
-        return ProductDetailViewModel(
-            product: product,
-            productService: Container.shared.productService(),
-            coreDataService: coreDataService,
-            notificationManager: notificationManager
-        )
-    }
+
 }

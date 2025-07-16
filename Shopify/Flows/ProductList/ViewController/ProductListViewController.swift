@@ -9,6 +9,7 @@ import UIKit
 
 final class ProductListViewController: UIViewController {
     private let viewModel: ProductListViewModel
+    weak var coordinator: ProductListCoordinator?
     private var searchDebounceTimer: Timer?
     private let searchDebounceInterval: TimeInterval = 0.5
 
@@ -256,9 +257,7 @@ extension ProductListViewController: UICollectionViewDelegate {
     }
 
     private func navigateToProductDetail(with product: Product) {
-        let detailVM = viewModel.makeProductDetailViewModel(for: product)
-        let detailVC = ProductDetailViewController(viewModel: detailVM)
-        navigationController?.pushViewController(detailVC, animated: true)
+        coordinator?.showProductDetail(for: product)
     }
 }
 
