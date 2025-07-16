@@ -82,7 +82,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
             if self.shouldSucceed {
                 completion(.success(()))
             } else {
-                completion(.failure(self.mockError ?? CoreDataServiceError.saveFailed(NSError())))
+                completion(.failure(self.mockError ?? CoreDataServiceError.saveFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
             }
         }
     }
@@ -91,7 +91,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
         if shouldSucceed {
             completion(.success(mockCartProducts))
         } else {
-            completion(.failure(mockError ?? CoreDataServiceError.fetchFailed(NSError())))
+            completion(.failure(mockError ?? CoreDataServiceError.fetchFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
         }
     }
     
@@ -103,7 +103,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
             if self.shouldSucceed {
                 completion(.success(()))
             } else {
-                completion(.failure(self.mockError ?? CoreDataServiceError.saveFailed(NSError())))
+                completion(.failure(self.mockError ?? CoreDataServiceError.saveFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
             }
         }
     }
@@ -116,7 +116,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
             if self.shouldSucceed {
                 completion(.success(()))
             } else {
-                completion(.failure(self.mockError ?? CoreDataServiceError.deleteFailed(NSError())))
+                completion(.failure(self.mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
             }
         }
     }
@@ -126,7 +126,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
             if self.shouldSucceed {
                 completion(.success(self.mockFavoriteIDs))
             } else {
-                completion(.failure(self.mockError ?? CoreDataServiceError.fetchFailed(NSError())))
+                completion(.failure(self.mockError ?? CoreDataServiceError.fetchFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
             }
         }
     }
@@ -137,7 +137,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
         if shouldSucceed {
             completion(.success(()))
         } else {
-            completion(.failure(mockError ?? CoreDataServiceError.updateFailed(NSError())))
+            completion(.failure(mockError ?? CoreDataServiceError.updateFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
         }
     }
     
@@ -148,7 +148,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
         if shouldSucceed {
             completion(.success(()))
         } else {
-            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError())))
+            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
         }
     }
     
@@ -158,7 +158,7 @@ class MockCoreDataService: CoreDataServiceProtocol {
         if shouldSucceed {
             completion(.success(()))
         } else {
-            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError())))
+            completion(.failure(mockError ?? CoreDataServiceError.deleteFailed(NSError(domain: "TestError", code: -1, userInfo: nil))))
         }
     }
     
