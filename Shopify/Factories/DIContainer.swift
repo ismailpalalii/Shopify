@@ -53,7 +53,6 @@ final class DIContainer: DependencyContainerProtocol {
     }
 }
 
-// Legacy Factory support - will be removed gradually
 extension Container {
     var networkManager: Factory<NetworkManagerProtocol> {
         Factory(self) { DIContainer.shared.networkManager() }

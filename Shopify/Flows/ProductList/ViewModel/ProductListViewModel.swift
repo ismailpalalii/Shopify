@@ -192,13 +192,26 @@ final class ProductListViewModel {
     func setSearchText(_ text: String) {
         searchText = text
         
+        // Log search analytics
+        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            AnalyticsManager.shared.logSearchPerformed(searchTerm: text, resultCount: 0)
+        }
+        
         // If search is not empty and we don't have all products cached, fetch them first
         if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isAllProductsCached {
             fetchAllProductsForFilter { [weak self] in
                 self?.filterAndSortProducts()
+                // Update search result count
+                if let self = self {
+                    AnalyticsManager.shared.logSearchPerformed(searchTerm: text, resultCount: self.filteredProducts.count)
+                }
             }
         } else {
             filterAndSortProducts()
+            // Update search result count
+            if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                AnalyticsManager.shared.logSearchPerformed(searchTerm: text, resultCount: filteredProducts.count)
+            }
         }
     }
     
@@ -324,8 +337,12 @@ final class ProductListViewModel {
             guard let self = self else { return }
             switch result {
             case .success:
+                // Log analytics
+                AnalyticsManager.shared.logProductAddedToCart(product: product, quantity: quantity)
                 self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
+                // Log error
+                AnalyticsManager.shared.logError(error, context: "addToCart")
                 DispatchQueue.main.async {
                     self.onError?(error)
                 }
@@ -343,6 +360,8 @@ final class ProductListViewModel {
                 guard let self = self else { return }
                 if case .success = result {
                     self.favoriteProductIDs.remove(product.id)
+                    // Log analytics
+                    AnalyticsManager.shared.logProductFavorited(product: product, isFavorite: false)
                     completion?()
                 }
             }
@@ -351,6 +370,8 @@ final class ProductListViewModel {
                 guard let self = self else { return }
                 if case .success = result {
                     self.favoriteProductIDs.insert(product.id)
+                    // Log analytics
+                    AnalyticsManager.shared.logProductFavorited(product: product, isFavorite: true)
                     completion?()
                 }
             }

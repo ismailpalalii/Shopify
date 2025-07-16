@@ -56,6 +56,10 @@ final class ProductDetailViewController: UIViewController {
         setupConstraints()
         setupBindings()
         updateUI()
+        
+        // Log screen view
+        AnalyticsManager.shared.logScreenView(screenName: "ProductDetail")
+        AnalyticsManager.shared.logProductViewed(product: viewModel.product)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -306,6 +310,7 @@ final class ProductDetailViewController: UIViewController {
     
     @objc private func addToCartTapped() {
         viewModel.addToCart(viewModel.product)
+        // Analytics is already logged in ViewModel
     }
     
     @objc private func backButtonTapped() {
