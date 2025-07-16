@@ -95,6 +95,7 @@ final class FavoritesViewModel {
     }
 
     var onStateChange: ((State) -> Void)?
+    var onError: ((Error) -> Void)?
 
     init(
         productService: ProductServiceProtocol,
@@ -228,7 +229,9 @@ final class FavoritesViewModel {
             case .success:
                 self.notificationManager.post(name: .cartUpdated, object: nil)
             case .failure(let error):
-                print("Cart add error: \(error)")
+                DispatchQueue.main.async {
+                    self.onError?(error)
+                }
             }
         }
     }

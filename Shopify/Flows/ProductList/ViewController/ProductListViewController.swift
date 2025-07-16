@@ -168,6 +168,15 @@ final class ProductListViewController: UIViewController {
                 self?.reload(for: state)
             }
         }
+        
+        viewModel.onError = { [weak self] error in
+            DispatchQueue.main.async {
+                ErrorHandler.shared.showToastError(
+                    "Failed to add item to cart. Please try again.",
+                    from: self ?? UIViewController()
+                )
+            }
+        }
     }
 
     private func reload(for state: ProductListViewModel.State) {
